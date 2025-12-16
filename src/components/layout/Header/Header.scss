@@ -1,0 +1,61 @@
+.header {
+    
+    // ===== Top =====
+    &__top {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 1rem;
+    }
+
+     // ===== Logo =====
+    &__logo {
+    }
+
+    &__logo-link {
+    }
+
+    &__logo-img {
+    }
+
+    // ===== Navigation =====
+    &__nav {
+        background-color: aqua;
+    }
+
+    &__nav-list {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 1rem;
+    }
+
+    &__nav-item {
+    }
+
+    &__nav-link {
+    }
+
+    &__nav-link--active {
+    }
+
+    // ===== Actions =====
+    &__actions {
+    }
+
+    &__action {
+    }
+
+    &__action--telegram {
+    }
+
+    &__action--phone {
+    }
+
+    &__action-icon {
+    }
+
+    // ===== Bottom =====
+    &__bottom {
+    }
+}

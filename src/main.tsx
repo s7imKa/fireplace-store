@@ -1,0 +1,22 @@
+import React from 'react'
+import { createRoot } from 'react-dom/client'
+import { BrowserRouter } from 'react-router-dom'
+import App from './App'
+import { AuthProvider } from './contexts/auth.context'
+import { CartProvider } from './contexts/cart.context'
+import GetDataFirebase from './contexts/ProductContextFireBase'
+import './styles/main.scss'
+
+createRoot(document.getElementById('root')!).render(
+    <React.StrictMode>
+        <AuthProvider>
+            <GetDataFirebase>
+                <CartProvider>
+                    <BrowserRouter>
+                        <App />
+                    </BrowserRouter>
+                </CartProvider>
+            </GetDataFirebase>
+        </AuthProvider>
+    </React.StrictMode>,
+)

@@ -1,0 +1,100 @@
+# Структура проекту React + TypeScript + Vite
+
+```
+my-react-app/
+├── public/                           # Статичні файли (не обробляються Vite)
+│   └── vite.svg                      # Іконка Vite
+├── src/                              # Вихідний код додатку
+│   ├── assets/                       # Медіа-ресурси (зображення, шрифти, SVG)
+│   │   └── react.svg                 # Логотип React
+│   ├── components/                   # React компоненти
+│   │   ├── ui/                       # Базові UI елементи (атомарні компоненти)
+│   │   │   ├── Button/
+│   │   │   │   ├── Button.tsx        # Компонент кнопки
+│   │   │   │   ├── Button.module.css # CSS модуль для кнопки
+│   │   │   │   └── index.ts          # Експорт компонента (barrel file)
+│   │   │   ├── Input/
+│   │   │   │   ├── Input.tsx         # Компонент поля вводу
+│   │   │   │   └── index.ts          # Експорт компонента
+│   │   │   ├── Card/
+│   │   │   │   ├── Card.tsx          # Картка (контейнер контенту)
+│   │   │   │   └── index.ts
+│   │   │   └── Modal/
+│   │   │       ├── Modal.tsx         # Модальне вікно
+│   │   │       └── index.ts
+│   │   ├── sections/                 # Секції сторінок (великі блоки)
+│   │   │   ├── Hero/
+│   │   │   │   ├── Hero.tsx          # Головний банер/секція
+│   │   │   │   ├── Hero.module.css
+│   │   │   │   └── index.ts
+│   │   │   ├── Features/
+│   │   │   │   ├── Features.tsx      # Секція з функціями/перевагами
+│   │   │   │   └── index.ts
+│   │   │   ├── Testimonials/
+│   │   │   │   ├── Testimonials.tsx  # Секція з відгуками
+│   │   │   │   └── index.ts
+│   │   │   └── ContactForm/
+│   │   │       ├── ContactForm.tsx   # Секція з формою зв'язку
+│   │   │       └── index.ts
+│   │   ├── features/                 # Складні функціональні компоненти
+│   │   │   ├── ProductCard/
+│   │   │   │   ├── ProductCard.tsx   # Картка товару з логікою
+│   │   │   │   └── index.ts
+│   │   │   ├── UserProfile/
+│   │   │   │   ├── UserProfile.tsx   # Профіль користувача
+│   │   │   │   └── index.ts
+│   │   │   └── SearchBar/
+│   │   │       ├── SearchBar.tsx     # Пошукова панель з логікою
+│   │   │       └── index.ts
+│   │   └── layout/                   # Компоненти макету сторінки
+│   │       ├── Header/
+│   │       │   ├── Header.tsx        # Шапка сайту
+│   │       │   └── index.ts          # Експорт компонента
+│   │       ├── Footer/
+│   │       │   ├── Footer.tsx        # Підвал сайту
+│   │       │   └── index.ts
+│   │       ├── Sidebar/
+│   │       │   ├── Sidebar.tsx       # Бокова панель
+│   │       │   └── index.ts
+│   │       └── Navbar/
+│   │           ├── Navbar.tsx        # Навігаційна панель
+│   │           └── index.ts
+│   ├── pages/                        # Компоненти сторінок (routes)
+│   │   ├── Home/
+│   │   │   ├── Home.tsx              # Головна сторінка
+│   │   │   └── index.ts              # Експорт сторінки
+│   │   └── About/
+│   │       ├── About.tsx             # Сторінка "Про нас"
+│   │       └── index.ts              # Експорт сторінки
+│   ├── hooks/                        # Кастомні React hooks
+│   │   ├── useAuth.ts                # Hook для автентифікації
+│   │   └── useFetch.ts               # Hook для HTTP запитів
+│   ├── services/                     # Сервіси для роботи з API
+│   │   └── api.ts                    # Налаштування HTTP клієнта (axios/fetch)
+│   ├── utils/                        # Допоміжні функції та утиліти
+│   │   └── helpers.ts                # Загальні функції-помічники
+│   ├── types/                        # TypeScript типи та інтерфейси
+│   │   ├── index.ts                  # Barrel file (експорт всіх типів)
+│   │   ├── user.types.ts             # Типи користувача
+│   │   ├── product.types.ts          # Типи продуктів
+│   │   ├── api.types.ts              # Типи API відповідей
+│   │   ├── common.types.ts           # Загальні типи (Response, Pagination)
+│   │   └── enums.ts                  # Enum'и (статуси, ролі)
+│   ├── contexts/                     # React Context API
+│   │   └── AuthContext.tsx           # Контекст автентифікації
+│   ├── styles/                       # Глобальні стилі
+│   │   ├── global.css                # Глобальні CSS стилі
+│   │   └── variables.css             # CSS змінні (кольори, розміри)
+│   ├── App.tsx                       # Головний компонент додатку
+│   ├── App.css                       # Стилі для App компонента
+│   ├── main.tsx                      # Точка входу додатку (ReactDOM.render)
+│   └── vite-env.d.ts                 # TypeScript declaration для Vite
+├── .gitignore                        # Файли, які Git має ігнорувати
+├── index.html                        # HTML шаблон (точка входу для Vite)
+├── package.json                      # Залежності та scripts проекту
+├── tsconfig.json                     # Конфігурація TypeScript для додатку
+├── tsconfig.node.json                # Конфігурація TypeScript для Node.js
+├── vite.config.ts                    # Конфігурація Vite bundler
+└── README.md                         # Документація проекту
+```
+
