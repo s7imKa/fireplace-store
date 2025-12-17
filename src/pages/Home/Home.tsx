@@ -1,17 +1,20 @@
-import { useContext, useState } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
+import { useContext, useState, type FC } from 'react'
 import { CartContext } from '../../contexts/cart.context'
 import { AuthContext, DataContext } from '../../contexts/context'
-import { logout } from '../../hooks/useAuthActions'
 import './home.scss'
+import {useNavigate} from "react-router-dom";
+import AsideFilter from '../../components/sections/AsideFilter/AsideFilter'
 
-export default function Home() {
+type HomeProps = {
+    searchQuery: string
+}
+
+const Home: FC<HomeProps> = ({ searchQuery }) => {
     const data = useContext(DataContext)
     const { addItem } = useContext(CartContext)
     const products = data?.products ?? []
     const categories = data?.category ?? []
 
-    const [searchQuery, setSearchQuery] = useState('')
     const [selectedCategoryId, setSelectedCategoryId] = useState<string | null>(null)
 
     const { user } = useContext(AuthContext)
@@ -42,44 +45,12 @@ export default function Home() {
 
     return (
         <div className='home'>
-            <div style={{ display: 'flex', gap: 10, alignItems: 'center', marginBottom: 10 }}>
-                {user ? (
-                    <>
-                        <span>{user?.email ?? user?.displayName}</span>
-                        <button onClick={() => logout()}>Вийти</button>
-                        <Link to='/profile' style={{ marginLeft: 8 }}>
-                            Профіль
-                        </Link>
-                        <Link to='/cart' style={{ marginLeft: 8 }}>
-                            Кошик
-                        </Link>
-                    </>
-                ) : (
-                    <>
-                        <button onClick={() => navigate('/login')}>Увійти</button>
-                        <Link to='/cart' style={{ marginLeft: 8 }}>
-                            Кошик
-                        </Link>
-                    </>
-                )}
-            </div>
 
-            <section className='hero'>
-                <h1>Магазин камінних топок</h1>
-                <p>Знайдіть ідеальну каміну для вашого дому</p>
-            </section>
 
+            <AsideFilter />
+            
+            
             <section className='filters'>
-                <div className='search-box'>
-                    <input
-                        type='text'
-                        placeholder='🔍 Пошук товарів...'
-                        value={searchQuery}
-                        onChange={e => setSearchQuery(e.target.value)}
-                        className='search-input'
-                    />
-                </div>
-
                 <div className='category-filters'>
                     <button
                         className={`filter-btn ${!selectedCategoryId ? 'active' : ''}`}
@@ -143,3 +114,5 @@ export default function Home() {
         </div>
     )
 }
+
+export default Home

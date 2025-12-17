@@ -1,7 +1,29 @@
-import { FaPhoneAlt, FaTelegramPlane } from 'react-icons/fa'
+import { useContext, useState, type FC } from 'react'
+import {
+    FaBars,
+    FaChevronDown,
+    FaPhoneAlt,
+    FaSearch,
+    FaTelegramPlane,
+    FaUser,
+} from 'react-icons/fa'
+import { SlBasket } from 'react-icons/sl'
+
+import { Link, useNavigate } from 'react-router-dom'
+import { AuthContext } from '../../../contexts/context.tsx'
+import { logout } from '../../../hooks/useAuthActions.ts'
 import './Header.scss'
 
-const Header = () => {
+type HeaderProps = {
+    setSearchQuery: (query: string) => void
+}
+
+const Header: FC<HeaderProps> = ({ setSearchQuery }) => {
+    const [inputValue, setInputValue] = useState('')
+    const { user } = useContext(AuthContext)
+
+    const navigate = useNavigate()
+
     return (
         <header className='header'>
             {/* Top */}
@@ -21,9 +43,9 @@ const Header = () => {
                 <nav className='header__nav' aria-label='Головне меню'>
                     <ul className='header__nav-list'>
                         <li className='header__nav-item'>
-                            <a className='header__nav-link header__nav-link--active' href='/'>
+                            <Link className='header__nav-link header__nav-link--active' to={'/'}>
                                 Головна
-                            </a>
+                            </Link>
                         </li>
                         <li className='header__nav-item'>
                             <a className='header__nav-link' href='#'>
@@ -46,18 +68,76 @@ const Header = () => {
                         rel='noopener noreferrer'
                         className='header__action header__action--telegram'
                     >
-                        <FaTelegramPlane className='header__action-icon' /> Перейти в Telegram
+                        <FaTelegramPlane className='header__action-icon' />
                     </a>
 
                     <a href='tel:+380XXXXXXXXX' className='header__action header__action--phone'>
-                        <FaPhoneAlt className='header__action-icon' /> 0973751342
+                        <FaPhoneAlt /> +380973751342
                     </a>
                 </div>
             </div>
 
             {/* Bottom */}
             <div className='header__bottom'>
-                <div className='header__container'>{/* Додатковий контент нижньої частини */}</div>
+                <div className='header__bottom-container container'>
+                    <div className='header__bottom-content'>
+                        <div className='header__bottom-content--catalog'>
+                            <div className='header__bottom-content--catalog-text'>
+                                <FaBars />
+                                <span>Каталог товарів</span>
+                            </div>
+                            <FaChevronDown />
+                        </div>
+
+                        <div className='header__bottom-content--search'>
+                            <input
+                                type='text'
+                                placeholder='Що ви шукаєте?'
+                                value={inputValue}
+                                onChange={e => setInputValue(e.target.value)}
+                                className='header__bottom-content--search-input'
+                            />
+                            <button
+                                className='header__bottom-content--search-btn'
+                                onClick={() => setSearchQuery(inputValue)}
+                            >
+                                <FaSearch />
+                            </button>
+                        </div>
+                    </div>
+
+                    <div className='header__bottom-userinfo'>
+                        {user ? (
+                            <>
+                                <span>{user?.email}</span>
+                                <a
+                                    className='header__bottom-userinfo__logout'
+                                    onClick={() => logout()}
+                                >
+                                    Вихід
+                                </a>
+                                <Link to='/profile'>
+                                    <FaUser className='header__bottom-userinfo__link' />
+                                </Link>
+                                <Link to='/cart'>
+                                    <SlBasket className='header__bottom-userinfo__link' />
+                                </Link>
+                            </>
+                        ) : (
+                            <>
+                                <button
+                                    className='header__bottom-userinfo__logout'
+                                    onClick={() => navigate('/login')}
+                                >
+                                    Увійти
+                                </button>
+                                <Link to='/cart'>
+                                    <SlBasket className='header__bottom-userinfo__link' />
+                                </Link>
+                            </>
+                        )}
+                    </div>
+                </div>
             </div>
         </header>
     )

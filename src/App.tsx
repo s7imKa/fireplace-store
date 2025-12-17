@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import { Route, Routes } from 'react-router'
 import AdminPanel from './components/features/AdminPanel'
 import Login from './components/features/Login'
@@ -7,12 +8,14 @@ import Cart from './pages/Cart/Cart'
 import Home from './pages/Home/Home'
 
 function App() {
+    const [searchQuery, setSearchQuery] = useState('')
+
     return (
         <>
-            <Header />
+            <Header setSearchQuery={setSearchQuery} />
             <main>
                 <Routes>
-                    <Route path='/' element={<Home />} />
+                    <Route path='/' element={<Home searchQuery={searchQuery} />} />
                     <Route path='/profile' element={<Profile />} />
                     <Route path='/login' element={<Login />} />
                     <Route path='/admin-panel' element={<AdminPanel />} />

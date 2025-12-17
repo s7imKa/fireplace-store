@@ -1,5 +1,4 @@
 .header {
-    
     // ===== Top =====
     &__top {
         display: flex;
@@ -8,7 +7,7 @@
         gap: 1rem;
     }
 
-     // ===== Logo =====
+    // ===== Logo =====
     &__logo {
     }
 
@@ -16,24 +15,28 @@
     }
 
     &__logo-img {
+        width: 24rem;
+        height: auto;
+        border-radius: 1rem;
     }
 
     // ===== Navigation =====
     &__nav {
-        background-color: aqua;
     }
 
     &__nav-list {
         display: flex;
         align-items: center;
         justify-content: center;
-        gap: 1rem;
+        gap: 1.5rem;
     }
 
     &__nav-item {
     }
 
     &__nav-link {
+        padding: 1rem 0.7rem;
+        font-size: 1.6rem;
     }
 
     &__nav-link--active {
@@ -41,12 +44,25 @@
 
     // ===== Actions =====
     &__actions {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 2rem;
     }
 
     &__action {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+
+        &-icon {
+            height: 1.9rem;
+            width: 1.9rem;
+        }
     }
 
     &__action--telegram {
+        color: #37aee2;
     }
 
     &__action--phone {
@@ -57,5 +73,91 @@
 
     // ===== Bottom =====
     &__bottom {
+        padding: 1rem 0;
+        background-color: #232f3e;
+        &-container {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        &-content {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 1rem;
+            &--catalog {
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                padding: 0.7rem 1rem;
+                height: 4rem;
+                width: 25rem;
+                background-color: #c04d00;
+                border-radius: 0.5rem;
+                color: #ffffff;
+                cursor: pointer;
+
+                &-text {
+                    display: flex;
+                    align-items: center;
+                    gap: 1rem;
+                    & span {
+                        font-size: 1.6rem;
+                    }
+                }
+            }
+
+            &--search {
+                position: relative;
+
+                &-input {
+                    height: 4rem;
+                    width: 40rem;
+                    padding: 0.5rem 1.5rem;
+                    font-size: 1.6rem;
+                    border-radius: 0.5rem;
+                    border: none;
+                    &::placeholder {
+                        color: #8d8d8d;
+                    }
+                }
+
+                &-btn {
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    position: absolute;
+                    right: 1rem;
+                    top: 50%;
+                    transform: translateY(-50%);
+                    height: 3.2rem;
+                    width: 5rem;
+                    background-color: #232f3e;
+                    color: white;
+                    border-radius: 0.3rem;
+                }
+            }
+        }
+
+        &-userinfo {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 1.5rem;
+            color: white;
+            font-size: 1.6rem;
+
+            & span {
+                color: white;
+            }
+            &__logout {
+                cursor: pointer;
+            }
+            &__link {
+                height: 2.8rem;
+                width: 2.8rem;
+            }
+        }
     }
 }
