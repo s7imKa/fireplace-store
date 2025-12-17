@@ -1,7 +1,12 @@
 .home {
-    padding: 20px;
-    max-width: 1400px;
-    margin: 0 auto;
+    &__catalog {
+        padding: 1.5rem 0;
+
+        display: flex;
+        align-items: start;
+        justify-content: start;
+        gap: 1.5rem;
+    }
 }
 
 // Hero секція
