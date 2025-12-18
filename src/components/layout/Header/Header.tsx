@@ -11,7 +11,6 @@ import { SlBasket } from 'react-icons/sl'
 
 import { Link, useNavigate } from 'react-router-dom'
 import { AuthContext } from '../../../contexts/context.tsx'
-import { logout } from '../../../hooks/useAuthActions.ts'
 import './Header.scss'
 
 type HeaderProps = {
@@ -110,12 +109,6 @@ const Header: FC<HeaderProps> = ({ setSearchQuery }) => {
                         {user ? (
                             <>
                                 <span>{user?.email}</span>
-                                <a
-                                    className='header__bottom-userinfo__logout'
-                                    onClick={() => logout()}
-                                >
-                                    Вихід
-                                </a>
                                 <Link to='/profile'>
                                     <FaUser className='header__bottom-userinfo__link' />
                                 </Link>

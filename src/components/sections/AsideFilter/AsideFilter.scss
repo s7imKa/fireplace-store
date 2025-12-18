@@ -1,3 +1,5 @@
+@use '../../../styles/variables' as *;
+
 .aside-filter {
     position: sticky;
     top: 16px;
@@ -8,9 +10,9 @@
     width: 28rem;
     background: #fff;
     border: 1px solid #eee;
-    border-radius: .5rem;
+    border-radius: 0.5rem;
     padding: 14px;
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.06);
+    box-shadow: $box-shadow;
 }
 
 .aside-filter__header {
@@ -24,23 +26,25 @@
         margin: 0;
         font-size: 1.4rem;
         line-height: 1.2;
-        color: #222;
+        color: #000000;
     }
 }
 
 .aside-filter__reset {
     border: 1px solid #e3e3e3;
-    background: #fff;
-    color: #333;
+    background-color: #fa4444af;
+    color: #ffffff;
     padding: 8px 10px;
-    border-radius: 10px;
+    border-radius: 5px;
     cursor: pointer;
     font-size: 1.3rem;
     line-height: 1;
 
+    transition: background-color 0.3s ease-out, color 0.3s ease-out !important;
+
     &:hover {
-        border-color: #d6d6d6;
-        background: #fafafa;
+        background-color: #f5f5f5 !important;
+        color: #000000 !important;
     }
 
     &:active {
@@ -54,7 +58,7 @@
     gap: 8px;
     padding-top: 12px;
     margin-top: 12px;
-    border-top: 1px solid #f0f0f0;
+    border-top: 1px solid #d8d8d8f5;
 
     &:first-of-type {
         border-top: none;
@@ -78,9 +82,9 @@
 .aside-filter__input,
 .aside-filter__select {
     width: 100%;
-    padding: 10px 12px;
+    padding: 5px 12px;
     border: 1px solid #d7d7d7;
-    border-radius: 10px;
+    border-radius: 5px;
     font-size: 1.4rem;
     background: #fff;
     color: #222;
@@ -110,7 +114,7 @@
 .aside-filter__checkbox {
     display: flex;
     align-items: center;
-    gap: 10px;
+    gap: 7px;
     cursor: pointer;
     font-size: 1.35rem;
     color: #222;
@@ -120,7 +124,6 @@
         width: 16px;
         height: 16px;
         accent-color: #ff6b35;
-        transform: translateY(1px);
     }
 }
 

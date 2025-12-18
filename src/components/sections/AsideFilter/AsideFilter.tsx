@@ -98,7 +98,7 @@ const AsideFilter: FC<Props> = ({ filters, setFilters, options, onReset }) => {
 
                 {showAirSupply && (
                     <div className='aside-filter__group'>
-                        <label className='aside-filter__label'>Подача повітря (airSupply)</label>
+                        <label className='aside-filter__label'>Подача повітря </label>
                         <select
                             className='aside-filter__select'
                             value={filters.airSupply}
@@ -118,7 +118,7 @@ const AsideFilter: FC<Props> = ({ filters, setFilters, options, onReset }) => {
 
                 {showMaterial && (
                     <div className='aside-filter__group'>
-                        <label className='aside-filter__label'>Матеріал (material)</label>
+                        <label className='aside-filter__label'>Матеріал </label>
                         <select
                             className='aside-filter__select'
                             value={filters.material}
@@ -138,7 +138,7 @@ const AsideFilter: FC<Props> = ({ filters, setFilters, options, onReset }) => {
 
                 {showGlassType && (
                     <div className='aside-filter__group'>
-                        <label className='aside-filter__label'>Тип скла (glassType)</label>
+                        <label className='aside-filter__label'>Тип скла </label>
                         <select
                             className='aside-filter__select'
                             value={filters.glassType}
@@ -158,7 +158,7 @@ const AsideFilter: FC<Props> = ({ filters, setFilters, options, onReset }) => {
 
                 {showDimensions && (
                     <div className='aside-filter__group'>
-                        <label className='aside-filter__label'>Розміри (dimensions)</label>
+                        <label className='aside-filter__label'>Розміри </label>
                         <select
                             className='aside-filter__select'
                             value={filters.dimensions}
@@ -179,7 +179,7 @@ const AsideFilter: FC<Props> = ({ filters, setFilters, options, onReset }) => {
                 {showChimneyDiameter && (
                     <div className='aside-filter__group'>
                         <label className='aside-filter__label'>
-                            Діаметр димоходу (chimneyDiameter)
+                            Діаметр димоходу 
                         </label>
                         <select
                             className='aside-filter__select'
