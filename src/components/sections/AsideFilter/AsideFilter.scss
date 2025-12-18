@@ -11,7 +11,7 @@
     background: #fff;
     border: 1px solid #eee;
     border-radius: 0.5rem;
-    padding: 14px;
+    padding: 12px;
     box-shadow: $box-shadow;
 }
 
@@ -32,8 +32,8 @@
 
 .aside-filter__reset {
     border: 1px solid #e3e3e3;
-    background-color: #fa4444af;
-    color: #ffffff;
+    background-color: #ffffffaf;
+    color: #646464;
     padding: 8px 10px;
     border-radius: 5px;
     cursor: pointer;
@@ -44,7 +44,7 @@
 
     &:hover {
         background-color: #f5f5f5 !important;
-        color: #000000 !important;
+        color: #C04D00 !important;
     }
 
     &:active {
@@ -84,7 +84,7 @@
     width: 100%;
     padding: 5px 12px;
     border: 1px solid #d7d7d7;
-    border-radius: 5px;
+    border-radius: 3px;
     font-size: 1.4rem;
     background: #fff;
     color: #222;

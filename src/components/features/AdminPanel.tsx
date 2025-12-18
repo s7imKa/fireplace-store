@@ -510,6 +510,7 @@ export default function AdminPanel() {
                                     Матеріал виготовлення
                                 </label>
                                 <input
+                                    
                                     type='text'
                                     placeholder='Напр., Сталь / Чавун'
                                     value={form.material || ''}
