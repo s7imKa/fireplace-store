@@ -19,7 +19,7 @@ type HeaderProps = {
 
 const Header: FC<HeaderProps> = ({ setSearchQuery }) => {
     const [inputValue, setInputValue] = useState('')
-    const { user } = useContext(AuthContext)
+    const { user, isAdmin } = useContext(AuthContext)
 
     const navigate = useNavigate()
 
@@ -56,6 +56,13 @@ const Header: FC<HeaderProps> = ({ setSearchQuery }) => {
                                 Монтаж камінів
                             </a>
                         </li>
+                        {isAdmin && (
+                            <li className='header__nav-item'>
+                                <Link className='header__nav-link' to='/admin-panel'>
+                                    Адмін-панель
+                                </Link>
+                            </li>
+                        )}
                     </ul>
                 </nav>
 

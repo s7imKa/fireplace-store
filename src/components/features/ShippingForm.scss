@@ -1,223 +1,293 @@
 // src/components/features/ShippingForm.scss
+@use '../../styles/variables' as *;
+
 .shipping-modal {
-  position: fixed;
-  inset: 0;
-  background: rgba(0, 0, 0, 0.5);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 1000;
-  padding: 16px;
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+    padding: 1.6rem;
 }
 
 .shipping-form {
-  background: white;
-  border-radius: 12px;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
-  padding: 32px;
-  width: 100%;
-  max-width: 500px;
-  max-height: 90vh;
-  overflow-y: auto;
+    background: #ffffff;
+    border-radius: 0.5rem;
+    border: 1px solid #d8d8d8;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+    padding: 3.2rem;
+    width: 100%;
+    max-width: 500px;
+    max-height: 90vh;
+    overflow-y: auto;
 
-  h2 {
-    margin: 0 0 24px 0;
-    font-size: 1.5rem;
-    color: #1a1a1a;
-    font-weight: 600;
-  }
+    h2 {
+        margin: 0 0 2.4rem 0;
+        font-size: 2.4rem;
+        color: #222;
+        font-weight: 600;
+    }
 }
 
 .form-group {
-  display: flex;
-  flex-direction: column;
-  margin-bottom: 16px;
-
-  label {
-    font-size: 0.875rem;
-    font-weight: 500;
-    color: #333;
-    margin-bottom: 6px;
-    
-    .required {
-      color: #ff6b35;
-      margin-left: 2px;
-    }
-  }
-
-  input,
-  textarea,
-  select {
-    padding: 10px 12px;
-    font-size: 1rem;
-    border: 1px solid #d0d0d0;
-    border-radius: 6px;
-    font-family: inherit;
-    transition: all 0.2s ease;
-
-    &:focus {
-      outline: none;
-      border-color: #ff6b35;
-      box-shadow: 0 0 0 3px rgba(255, 107, 53, 0.1);
-    }
-
-    &:hover:not(:focus) {
-      border-color: #999;
-    }
-
-    &[aria-invalid='true'] {
-      border-color: #e74c3c;
-      background-color: rgba(231, 76, 60, 0.05);
-    }
-  }
-
-  textarea {
-    resize: vertical;
-    min-height: 80px;
-  }
-}
-
-.error-message {
-  font-size: 0.75rem;
-  color: #e74c3c;
-  margin-top: 4px;
-  display: flex;
-  align-items: center;
-  gap: 4px;
-
-  &::before {
-    content: '⚠';
-  }
-}
-
-.dropdown-container {
-  position: relative;
-
-  .dropdown-list {
-    position: absolute;
-    top: calc(100% + 2px);
-    left: 0;
-    right: 0;
-    border: 1px solid #d0d0d0;
-    border-radius: 6px;
-    background: white;
-    max-height: 200px;
-    overflow-y: auto;
-    z-index: 10;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-
-    .dropdown-item {
-      padding: 10px 12px;
-      cursor: pointer;
-      transition: background-color 0.15s ease;
-
-      &:hover {
-        background-color: #fff0e6;
-      }
-
-      &:first-child {
-        border-radius: 6px 6px 0 0;
-      }
-
-      &:last-child {
-        border-radius: 0 0 6px 6px;
-      }
-    }
-  }
-
-  .loading {
-    padding: 12px;
-    text-align: center;
-    font-size: 0.85rem;
-    color: #666;
-  }
-}
-
-.form-actions {
-  display: flex;
-  gap: 12px;
-  margin-top: 24px;
-  border-top: 1px solid #eee;
-  padding-top: 24px;
-
-  button {
-    flex: 1;
-    padding: 12px 16px;
-    font-size: 1rem;
-    font-weight: 600;
-    border: none;
-    border-radius: 6px;
-    cursor: pointer;
-    transition: all 0.2s ease;
-
-    &:disabled {
-      opacity: 0.6;
-      cursor: not-allowed;
-    }
-  }
-
-  .btn-primary {
-    background: #ff6b35;
-    color: white;
-
-    &:hover:not(:disabled) {
-      background: #ff8c42;
-      transform: translateY(-2px);
-      box-shadow: 0 4px 12px rgba(255, 107, 53, 0.3);
-    }
-
-    &:active:not(:disabled) {
-      transform: translateY(0);
-    }
-  }
-
-  .btn-secondary {
-    background: #f0f0f0;
-    color: #333;
-
-    &:hover:not(:disabled) {
-      background: #e0e0e0;
-    }
-  }
-}
-
-@media (max-width: 640px) {
-  .shipping-modal {
-    padding: 12px;
-  }
-
-  .shipping-form {
-    padding: 20px;
-
-    h2 {
-      font-size: 1.25rem;
-      margin-bottom: 16px;
-    }
-  }
-
-  .form-group {
-    margin-bottom: 12px;
+    display: flex;
+    flex-direction: column;
+    margin-bottom: 1.6rem;
 
     label {
-      font-size: 0.8rem;
-      margin-bottom: 4px;
+        font-size: 1.4rem;
+        font-weight: 500;
+        color: #222;
+        margin-bottom: 0.6rem;
+
+        .required {
+            color: #c04d00;
+            margin-left: 0.2rem;
+        }
     }
 
     input,
-    textarea {
-      padding: 8px 10px;
-      font-size: 16px; // запобігає зуму на iOS
-    }
-  }
+    textarea,
+    select {
+        padding: 1rem 1.2rem;
+        font-size: 1.4rem;
+        border: 1px solid #d7d7d7;
+        border-radius: 0.5rem;
+        font-family: inherit;
+        color: #222;
+        background: #fff;
+        transition: all 0.15s ease;
 
-  .form-actions {
-    flex-direction: column;
-    gap: 8px;
-    margin-top: 16px;
-    padding-top: 16px;
+        &::placeholder {
+            color: #8a8a8a;
+        }
+
+        &:focus {
+            outline: none;
+            border-color: #c04d00;
+            box-shadow: 0 0 0 3px rgba(192, 77, 0, 0.14);
+        }
+
+        &:hover:not(:focus) {
+            border-color: #837c77;
+        }
+
+        &[aria-invalid='true'] {
+            border-color: #e74c3c;
+            background-color: rgba(231, 76, 60, 0.05);
+        }
+    }
+
+    textarea {
+        resize: vertical;
+        min-height: 8rem;
+    }
+}
+
+.error-message {
+    font-size: 1.2rem;
+    color: #e74c3c;
+    margin-top: 0.4rem;
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+
+    &::before {
+        content: '⚠';
+    }
+}
+
+.dropdown-container {
+    position: relative;
+
+    .dropdown-list {
+        position: absolute;
+        top: calc(100% + 0.2rem);
+        left: 0;
+        right: 0;
+        border: 1px solid #d7d7d7;
+        border-radius: 0.5rem;
+        background: #ffffff;
+        max-height: 200px;
+        overflow-y: auto;
+        z-index: 10;
+        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+
+        .dropdown-item {
+            padding: 1rem 1.2rem;
+            cursor: pointer;
+            font-size: 1.4rem;
+            color: #222;
+            transition: all 0.15s ease;
+
+            &:hover {
+                background-color: rgba(192, 77, 0, 0.08);
+                color: #c04d00;
+            }
+
+            &:first-child {
+                border-radius: 0.5rem 0.5rem 0 0;
+            }
+
+            &:last-child {
+                border-radius: 0 0 0.5rem 0.5rem;
+            }
+        }
+    }
+
+    .loading {
+        padding: 1.2rem;
+        text-align: center;
+        font-size: 1.3rem;
+        color: #8a8a8a;
+    }
+}
+
+.form-actions {
+    display: flex;
+    gap: 1rem;
+    margin-top: 2.4rem;
+    border-top: 1px solid #c5c5c5be;
+    padding-top: 2.4rem;
 
     button {
-      width: 100%;
+        flex: 1;
+        padding: 1.2rem 1.6rem;
+        font-size: 1.6rem;
+        font-weight: 600;
+        border: none;
+        border-radius: 0.5rem;
+        cursor: pointer;
+        transition: all 0.3s ease;
+
+        &:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
     }
-  }
+
+    .btn-primary {
+        background: #c04d00;
+        color: white;
+
+        &:hover:not(:disabled) {
+            background: #d85500;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(192, 77, 0, 0.3);
+        }
+
+        &:active:not(:disabled) {
+            transform: scale(0.98);
+        }
+    }
+
+    .btn-secondary {
+        background: #f0f0f0;
+        color: #222;
+        border: 1px solid #d7d7d7;
+
+        &:hover:not(:disabled) {
+            background: #e0e0e0;
+            border-color: #c5c5c5;
+        }
+
+        &:active:not(:disabled) {
+            transform: scale(0.98);
+        }
+    }
+}
+
+// Адаптивність
+@media (max-width: 768px) {
+    .shipping-modal {
+        padding: 1.2rem;
+    }
+
+    .shipping-form {
+        padding: 2.4rem 2rem;
+
+        h2 {
+            font-size: 2rem;
+            margin-bottom: 2rem;
+        }
+    }
+
+    .form-group {
+        margin-bottom: 1.4rem;
+
+        label {
+            font-size: 1.3rem;
+            margin-bottom: 0.5rem;
+        }
+
+        input,
+        textarea {
+            padding: 0.9rem 1rem;
+            font-size: 1.4rem;
+        }
+    }
+}
+
+@media (max-width: 480px) {
+    .shipping-modal {
+        padding: 0.8rem;
+        align-items: flex-start;
+        padding-top: 2rem;
+    }
+
+    .shipping-form {
+        padding: 2rem 1.6rem;
+        max-height: 95vh;
+
+        h2 {
+            font-size: 1.8rem;
+            margin-bottom: 1.6rem;
+        }
+    }
+
+    .form-group {
+        margin-bottom: 1.2rem;
+
+        label {
+            font-size: 1.2rem;
+        }
+
+        input,
+        textarea,
+        select {
+            font-size: 1.6rem; // запобігає зуму на iOS
+            padding: 0.8rem 1rem;
+        }
+    }
+
+    .dropdown-container {
+        .dropdown-list {
+            .dropdown-item {
+                padding: 0.9rem 1rem;
+                font-size: 1.4rem;
+            }
+        }
+    }
+
+    .form-actions {
+        flex-direction: column;
+        gap: 0.8rem;
+        margin-top: 2rem;
+        padding-top: 2rem;
+
+        button {
+            width: 100%;
+            padding: 1rem;
+            font-size: 1.5rem;
+        }
+    }
+}
+
+// Покращена прокрутка для dropdown на мобільних
+@media (max-width: 480px) {
+    .dropdown-container .dropdown-list {
+        max-height: 180px;
+    }
 }

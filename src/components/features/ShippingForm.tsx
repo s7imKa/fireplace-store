@@ -1,13 +1,17 @@
 import { useEffect, useRef, useState } from 'react'
-import { getWarehouses, searchCities, type City, type Warehouse } from '../../hooks/npApi'
-import { saveShippingInfo } from '../../hooks/useOrders'
-import type { ShippingInfo } from '../../types/order.type'
-import './ShippingForm.scss'
 import { useNavigate } from 'react-router'
+import { getWarehouses, searchCities, type City, type Warehouse } from '../../hooks/npApi'
+import { createOrder, saveShippingInfo } from '../../hooks/useOrders'
+import type { CartItem, ShippingInfo } from '../../types/order.type'
+import './ShippingForm.scss'
 
 interface Props {
-    orderId: string
-    onDone: () => void
+    userId: string
+    isGuest: boolean
+    items: CartItem[]
+    total: number
+    onSuccess: (orderId: string) => void
+    onCancel: () => void
 }
 
 const PHONE_REGEX = /^\+?380\d{9}$/
@@ -18,7 +22,14 @@ interface FormErrors {
     [key: string]: string | null
 }
 
-export default function ShippingForm({ orderId, onDone }: Props) {
+export default function ShippingForm({
+    userId,
+    isGuest,
+    items,
+    total,
+    onSuccess,
+    onCancel,
+}: Props) {
     const [form, setForm] = useState<FormState>({
         firstName: '',
         lastName: '',
@@ -46,6 +57,7 @@ export default function ShippingForm({ orderId, onDone }: Props) {
     const warehouseInputRef = useRef<HTMLInputElement | null>(null)
     const overlayRef = useRef<HTMLDivElement | null>(null)
     const navigate = useNavigate()
+    const [creatingOrder, setCreatingOrder] = useState(false)
 
     // Закриття dropdown при кліку поза ним
     useEffect(() => {
@@ -187,16 +199,34 @@ export default function ShippingForm({ orderId, onDone }: Props) {
         }
 
         setSaving(true)
+        setCreatingOrder(true)
         try {
-            await saveShippingInfo(orderId, {
+            const shippingInfo = {
                 firstName: form.firstName.trim(),
                 lastName: form.lastName.trim(),
                 phone: form.phone.trim(),
                 city: form.city.trim(),
                 novaPoshtaBranch: form.novaPoshtaBranch.trim(),
                 comment: form.comment?.trim() || '',
-            })
-            onDone()
+            }
+
+            if (isGuest) {
+                // Для гостей тільки відправляємо в Telegram
+                const { notifyTelegramGuest } = await import('../../hooks/useOrders')
+                await notifyTelegramGuest(items, total, shippingInfo)
+                onSuccess('guest')
+            } else {
+                // Для авторизованих користувачів зберігаємо в Firestore
+                const orderId = await createOrder({
+                    userId,
+                    items,
+                    total,
+                    status: 'new',
+                })
+
+                await saveShippingInfo(orderId, shippingInfo)
+                onSuccess(orderId)
+            }
             navigate('/')
         } catch (e) {
             const errorMsg = e instanceof Error ? e.message : 'Помилка збереження даних'
@@ -204,6 +234,7 @@ export default function ShippingForm({ orderId, onDone }: Props) {
             console.error('Save shipping error:', e)
         } finally {
             setSaving(false)
+            setCreatingOrder(false)
         }
     }
 
@@ -382,14 +413,18 @@ export default function ShippingForm({ orderId, onDone }: Props) {
 
                 {/* Кнопки */}
                 <div className='form-actions'>
-                    <button type='submit' className='btn-primary' disabled={saving}>
-                        {saving ? 'Обробка...' : '✓ Оформити замовлення'}
+                    <button
+                        type='submit'
+                        className='btn-primary'
+                        disabled={saving || creatingOrder}
+                    >
+                        {saving || creatingOrder ? 'Обробка...' : '✓ Оформити замовлення'}
                     </button>
                     <button
                         type='button'
                         className='btn-secondary'
-                        onClick={onDone}
-                        disabled={saving}
+                        onClick={onCancel}
+                        disabled={saving || creatingOrder}
                     >
                         Скасувати
                     </button>

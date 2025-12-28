@@ -3,7 +3,7 @@ import { Link, useNavigate } from 'react-router-dom'
 import ShippingForm from '../../components/features/ShippingForm'
 import { CartContext } from '../../contexts/cart.context'
 import { AuthContext } from '../../contexts/context'
-import { createOrder } from '../../hooks/useOrders'
+import './cart.scss'
 
 export default function Cart() {
     const { items, removeItem, clear, total, updateQty } = useContext(CartContext)
@@ -11,138 +11,150 @@ export default function Cart() {
     const navigate = useNavigate()
 
     const [showShipping, setShowShipping] = useState(false)
-    const [lastOrderId, setLastOrderId] = useState<string | null>(null)
+    const [showLoginPrompt, setShowLoginPrompt] = useState(false)
     const [error, setError] = useState<string | null>(null)
-    const [placing, setPlacing] = useState(false)
 
     const checkout = async () => {
         setError(null)
-        if (!user) {
-            navigate('/login', { state: { redirectTo: '/cart' } })
-            return
-        }
         if (items.length === 0) {
             setError('Кошик порожній')
             return
         }
-        setPlacing(true)
-        try {
-            const id = await createOrder({
-                userId: user.uid,
-                items,
-                total,
-                status: 'new',
-            })
-            clear()
-            setLastOrderId(id)
-            setShowShipping(true)
-        } catch (e: unknown) {
-            console.error('createOrder error:', e)
-            setError(e instanceof Error ? e.message : 'Не вдалося створити замовлення')
-        } finally {
-            setPlacing(false)
+        if (!user) {
+            setShowLoginPrompt(true)
+            return
         }
+        setShowShipping(true)
+    }
+
+    const handleGuestCheckout = () => {
+        setShowLoginPrompt(false)
+        setShowShipping(true)
+    }
+
+    const handleLoginRedirect = () => {
+        navigate('/login', { state: { redirectTo: '/cart' } })
     }
 
     return (
-        <div style={{ maxWidth: 900, margin: '20px auto', padding: '0 16px' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <h2>Кошик</h2>
-                <Link to='/'>← До головної</Link>
+        <div className='cart-page'>
+            <div className='cart-page__header'>
+                <h2 className='cart-page__title'>Кошик</h2>
+                <Link to='/' className='cart-page__back-link'>
+                    ← До головної
+                </Link>
             </div>
 
-            {error && <p style={{ color: 'red' }}>{error}</p>}
+            {error && <div className='cart-page__error'>{error}</div>}
 
             {items.length === 0 ? (
-                <div style={{ marginTop: 16 }}>
+                <div className='cart-page__empty'>
                     <p>Кошик порожній.</p>
                     <Link to='/'>Перейти до товарів</Link>
                 </div>
             ) : (
                 <>
-                    <ul style={{ listStyle: 'none', padding: 0, marginTop: 12 }}>
-                        {items.map(i => (
-                            <li
-                                key={i.productId}
-                                style={{
-                                    display: 'grid',
-                                    gridTemplateColumns: '1.4fr 0.8fr 0.6fr auto',
-                                    gap: 12,
-                                    alignItems: 'center',
-                                    borderBottom: '1px solid #eee',
-                                    padding: '10px 0',
-                                }}
-                            >
-                                <div>
-                                    <div style={{ fontWeight: 600 }}>{i.name}</div>
-                                    <div style={{ fontSize: 13, color: '#666' }}>
-                                        Ціна: {i.price} ₴
+                    <div className='cart-items'>
+                        <ul className='cart-items__list'>
+                            {items.map(i => (
+                                <li key={i.productId} className='cart-item'>
+                                    <div className='cart-item__info'>
+                                        <div className='cart-item__name'>{i.name}</div>
+                                        <div className='cart-item__price-label'>
+                                            Ціна: <span>{i.price} ₴</span>
+                                        </div>
                                     </div>
-                                </div>
 
-                                {/* Кількість */}
-                                <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                                    <button onClick={() => updateQty(i.productId, i.qty - 1)}>
-                                        -
+                                    <div className='cart-item__quantity'>
+                                        <button
+                                            className='cart-item__qty-btn'
+                                            onClick={() => updateQty(i.productId, i.qty - 1)}
+                                        >
+                                            −
+                                        </button>
+                                        <input
+                                            type='number'
+                                            min={1}
+                                            value={i.qty}
+                                            onChange={e =>
+                                                updateQty(i.productId, Number(e.target.value))
+                                            }
+                                            className='cart-item__qty-input'
+                                        />
+                                        <button
+                                            className='cart-item__qty-btn'
+                                            onClick={() => updateQty(i.productId, i.qty + 1)}
+                                        >
+                                            +
+                                        </button>
+                                    </div>
+
+                                    <div className='cart-item__subtotal'>{i.price * i.qty} ₴</div>
+
+                                    <button
+                                        className='cart-item__remove-btn'
+                                        onClick={() => removeItem(i.productId)}
+                                    >
+                                        Видалити
                                     </button>
-                                    <input
-                                        type='number'
-                                        min={1}
-                                        value={i.qty}
-                                        onChange={e =>
-                                            updateQty(i.productId, Number(e.target.value))
-                                        }
-                                        style={{ width: 60, textAlign: 'center' }}
-                                    />
-                                    <button onClick={() => updateQty(i.productId, i.qty + 1)}>
-                                        +
-                                    </button>
-                                </div>
-
-                                {/* Сума рядка */}
-                                <div style={{ fontWeight: 600 }}>{i.price * i.qty} ₴</div>
-
-                                <button onClick={() => removeItem(i.productId)}>Видалити</button>
-                            </li>
-                        ))}
-                    </ul>
-
-                    <div
-                        style={{
-                            display: 'flex',
-                            justifyContent: 'space-between',
-                            alignItems: 'center',
-                            marginTop: 16,
-                            borderTop: '1px solid #eee',
-                            paddingTop: 12,
-                        }}
-                    >
-                        <button onClick={clear}>Очистити кошик</button>
-                        <div>
-                            <b>Загальна сума: {total} ₴</b>
-                        </div>
+                                </li>
+                            ))}
+                        </ul>
                     </div>
 
-                    <div style={{ marginTop: 16 }}>
-                        <button
-                            onClick={checkout}
-                            style={{ padding: '8px 16px' }}
-                            disabled={placing}
-                        >
-                            {placing ? 'Створення замовлення...' : 'Оформити замовлення'}
-                        </button>
+                    <div className='cart-summary'>
+                        <div className='cart-summary__top'>
+                            <button className='cart-summary__clear-btn' onClick={clear}>
+                                Очистити кошик
+                            </button>
+                            <div className='cart-summary__total'>
+                                Загальна сума: <span>{total} ₴</span>
+                            </div>
+                        </div>
+
+                        <div className='cart-summary__checkout'>
+                            <button onClick={checkout} className='cart-summary__checkout-btn'>
+                                Оформити замовлення
+                            </button>
+                        </div>
                     </div>
                 </>
             )}
 
-            {/* Модальне вікно доставки після створення замовлення */}
-            {showShipping && lastOrderId && (
+            {showLoginPrompt && (
+                <div className='login-prompt-overlay'>
+                    <div className='login-prompt-modal'>
+                        <h3>Оформлення замовлення</h3>
+                        <p>
+                            Бажаєте увійти, щоб зберегти замовлення в вашому профілі та відстежувати
+                            його статус?
+                        </p>
+                        <div className='login-prompt-actions'>
+                            <button className='btn-login' onClick={handleLoginRedirect}>
+                                Увійти
+                            </button>
+                            <button className='btn-guest' onClick={handleGuestCheckout}>
+                                Продовжити як гість
+                            </button>
+                        </div>
+                        <button className='btn-close' onClick={() => setShowLoginPrompt(false)}>
+                            ✕
+                        </button>
+                    </div>
+                </div>
+            )}
+
+            {showShipping && items.length > 0 && (
                 <ShippingForm
-                    orderId={lastOrderId}
-                    onDone={() => {
+                    userId={user?.uid || ''}
+                    isGuest={!user}
+                    items={items}
+                    total={total}
+                    onSuccess={() => {
+                        clear()
                         setShowShipping(false)
-                        setLastOrderId(null)
                     }}
+                    onCancel={() => setShowShipping(false)}
                 />
             )}
         </div>

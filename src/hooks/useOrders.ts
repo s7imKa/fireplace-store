@@ -71,3 +71,35 @@ export async function saveShippingInfo(orderId: string, info: ShippingInfo) {
     await notifyTelegram(orderId, snap.data())
 }
 
+export async function notifyTelegramGuest(
+    items: CartItem[],
+    total: number,
+    shipping: ShippingInfo,
+) {
+    const token = import.meta.env.VITE_TG_TOKEN
+    const chatId = import.meta.env.VITE_TG_CHAT
+    if (!token || !chatId) return
+
+    const itemsText =
+        items.map((i: CartItem) => `${i.name} x${i.qty} = ${i.price * i.qty} ₴`).join('\n') || '—'
+
+    const text = `🆕 Нове замовлення (ГІСТЬ)
+Статус: Нове
+Сума: ${total} ₴
+
+Товари:
+${itemsText}
+
+Доставка:
+${shipping.lastName} ${shipping.firstName}
+Тел: ${shipping.phone}
+Місто: ${shipping.city}
+Відділення: ${shipping.novaPoshtaBranch}
+${shipping.comment ? 'Коментар: ' + shipping.comment : ''}`
+
+    await fetch(`https://api.telegram.org/bot${token}/sendMessage`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ chat_id: chatId, text }),
+    })
+}

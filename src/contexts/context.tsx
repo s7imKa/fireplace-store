@@ -23,6 +23,7 @@ interface CartContextValue {
     removeItem: (productId: string) => void
     clear: () => void
     total: number
+    updateQty: (productId: string, qty: number) => void // added
 }
 
 export const CartContext = createContext<CartContextValue>({
@@ -31,4 +32,5 @@ export const CartContext = createContext<CartContextValue>({
     removeItem: () => {},
     clear: () => {},
     total: 0,
+    updateQty: () => {}, // added
 })

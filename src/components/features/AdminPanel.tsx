@@ -6,6 +6,7 @@ import { db } from '../../firebase'
 import { uploadImageToImgBB } from '../../hooks/useImgBB'
 import type { Category } from '../../types/category.type'
 import type { Product } from '../../types/product.type'
+import './AdminPanel.scss'
 
 interface FormState {
     id?: string
@@ -14,7 +15,6 @@ interface FormState {
     description: string
     imageUrl: string
     categoryId: string
-    // ДОДАНО: технічні характеристики
     isBestSeller: boolean
     glassType: string
     material: string
@@ -64,15 +64,16 @@ export default function AdminPanel() {
     const [error, setError] = useState<string | null>(null)
     const [successMsg, setSuccessMsg] = useState<string | null>(null)
 
-    const { user } = useContext(AuthContext)
+    const { user, loading, isAdmin } = useContext(AuthContext)
     const navigate = useNavigate()
 
-    // Перевірка прав адміна
+    // Перевірка прав адміна (чекаємо доки auth завантажиться)
     useEffect(() => {
-        if (user?.email?.toLowerCase() !== 'admin@gmail.com') {
+        if (loading) return
+        if (!isAdmin) {
             navigate('/')
         }
-    }, [user, navigate])
+    }, [loading, isAdmin, navigate])
 
     // Завантаження даних
     useEffect(() => {
@@ -133,11 +134,9 @@ export default function AdminPanel() {
         if (!form.price || form.price <= 0) return 'Вкажіть коректну ціну'
         if (!form.categoryId) return 'Оберіть категорію'
         if (!imageFile && !form.imageUrl) return 'Завантажте зображення'
-        // технічні поля опційні, можна додати правила за потреби
         return null
     }
 
-    // Збереження товару у Firestore з новими полями
     const save = async () => {
         setError(null)
         setSuccessMsg(null)
@@ -164,7 +163,6 @@ export default function AdminPanel() {
                 imageUrl,
                 categoryId: form.categoryId,
                 category: categories.find(c => c.categoryId === form.categoryId)?.name ?? '',
-                // нові поля
                 isBestSeller: !!form.isBestSeller,
                 glassType: form.glassType?.trim() || '',
                 material: form.material?.trim() || '',
@@ -299,42 +297,22 @@ export default function AdminPanel() {
     }
 
     return (
-        <div style={{ padding: 20 }}>
+        <div className='admin-panel container'>
             {/* ТАБУЛЯЦІЯ */}
-            <div
-                style={{
-                    display: 'flex',
-                    gap: 12,
-                    marginBottom: 20,
-                    borderBottom: '1px solid #eee',
-                    paddingBottom: 12,
-                }}
-            >
+            <div className='admin-panel__tabs'>
                 <button
                     onClick={() => setActiveTab('products')}
-                    style={{
-                        padding: '8px 16px',
-                        background: activeTab === 'products' ? '#ff6b35' : '#e0e0e0',
-                        color: activeTab === 'products' ? 'white' : '#333',
-                        border: 'none',
-                        borderRadius: 6,
-                        fontWeight: 600,
-                        cursor: 'pointer',
-                    }}
+                    className={`admin-panel__tab-btn ${
+                        activeTab === 'products' ? 'admin-panel__tab-btn--active' : ''
+                    }`}
                 >
                     📦 Товари ({products.length})
                 </button>
                 <button
                     onClick={() => setActiveTab('categories')}
-                    style={{
-                        padding: '8px 16px',
-                        background: activeTab === 'categories' ? '#ff6b35' : '#e0e0e0',
-                        color: activeTab === 'categories' ? 'white' : '#333',
-                        border: 'none',
-                        borderRadius: 6,
-                        fontWeight: 600,
-                        cursor: 'pointer',
-                    }}
+                    className={`admin-panel__tab-btn ${
+                        activeTab === 'categories' ? 'admin-panel__tab-btn--active' : ''
+                    }`}
                 >
                     🏷️ Категорії ({categories.length})
                 </button>
@@ -342,73 +320,53 @@ export default function AdminPanel() {
 
             {/* ПОВІДОМЛЕННЯ */}
             {error && (
-                <div
-                    style={{
-                        background: '#ffe6e6',
-                        color: '#e74c3c',
-                        padding: 12,
-                        borderRadius: 6,
-                        marginBottom: 16,
-                    }}
-                >
-                    ⚠️ {error}
-                </div>
+                <div className='admin-panel__message admin-panel__message--error'>⚠️ {error}</div>
             )}
             {successMsg && (
-                <div
-                    style={{
-                        background: '#e6ffe6',
-                        color: '#27ae60',
-                        padding: 12,
-                        borderRadius: 6,
-                        marginBottom: 16,
-                    }}
-                >
+                <div className='admin-panel__message admin-panel__message--success'>
                     {successMsg}
                 </div>
             )}
 
             {/* ТАБ: ТОВАРИ */}
             {activeTab === 'products' && (
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 20 }}>
+                <div className='admin-panel__content'>
                     {/* Карточка: Основна інформація */}
-                    <div style={{ background: '#f9f9f9', padding: 16, borderRadius: 8 }}>
+                    <div className='admin-panel__card'>
                         <h3>Основна інформація</h3>
-                        <div style={{ display: 'grid', gap: 12 }}>
-                            <div>
-                                <label style={{ display: 'block', marginBottom: 4, fontWeight: 600 }}>
-                                    Назва товару*
-                                </label>
+                        <div className='admin-panel__form'>
+                            <div className='admin-panel__form-group'>
+                                <label className='admin-panel__label'>Назва товару*</label>
                                 <input
                                     type='text'
+                                    className='admin-panel__input'
                                     placeholder='Напр., Камінна топка Optima 700'
                                     value={form.name || ''}
                                     onChange={e => setForm(f => ({ ...f, name: e.target.value }))}
-                                    style={{ width: '100%', padding: 10, border: '1px solid #ddd', borderRadius: 6 }}
                                 />
                             </div>
 
-                            <div>
-                                <label style={{ display: 'block', marginBottom: 4, fontWeight: 600 }}>
-                                    Ціна (₴)*
-                                </label>
+                            <div className='admin-panel__form-group'>
+                                <label className='admin-panel__label'>Ціна (₴)*</label>
                                 <input
                                     type='number'
+                                    className='admin-panel__input'
                                     placeholder='Напр., 18999'
                                     value={form.price || 0}
-                                    onChange={e => setForm(f => ({ ...f, price: Number(e.target.value) }))}
-                                    style={{ width: '100%', padding: 10, border: '1px solid #ddd', borderRadius: 6 }}
+                                    onChange={e =>
+                                        setForm(f => ({ ...f, price: Number(e.target.value) }))
+                                    }
                                 />
                             </div>
 
-                            <div>
-                                <label style={{ display: 'block', marginBottom: 4, fontWeight: 600 }}>
-                                    Категорія*
-                                </label>
+                            <div className='admin-panel__form-group'>
+                                <label className='admin-panel__label'>Категорія*</label>
                                 <select
+                                    className='admin-panel__select'
                                     value={form.categoryId || ''}
-                                    onChange={e => setForm(f => ({ ...f, categoryId: e.target.value }))}
-                                    style={{ width: '100%', padding: 10, border: '1px solid #ddd', borderRadius: 6 }}
+                                    onChange={e =>
+                                        setForm(f => ({ ...f, categoryId: e.target.value }))
+                                    }
                                 >
                                     <option value=''>Оберіть категорію...</option>
                                     {categories.map(c => (
@@ -419,8 +377,8 @@ export default function AdminPanel() {
                                 </select>
                             </div>
 
-                            <div>
-                                <label style={{ display: 'block', marginBottom: 4, fontWeight: 600 }}>
+                            <div className='admin-panel__form-group'>
+                                <label className='admin-panel__label'>
                                     Фото товару* (JPG, PNG, WebP, GIF)
                                 </label>
                                 <input
@@ -428,50 +386,55 @@ export default function AdminPanel() {
                                     accept='image/jpeg,image/png,image/webp,image/gif'
                                     onChange={handleImageSelect}
                                     disabled={uploading || saving}
-                                    style={{ width: '100%', padding: 8 }}
                                 />
                                 {imagePreview && (
-                                    <div style={{ marginTop: 12 }}>
-                                        <img
-                                            src={imagePreview}
-                                            alt='Preview'
-                                            style={{ width: 140, height: 140, objectFit: 'cover', borderRadius: 6, border: '2px solid #ff6b35' }}
-                                        />
-                                        <div style={{ fontSize: 12, color: '#666', marginTop: 4 }}>📤 Готово до завантаження</div>
+                                    <div className='admin-panel__image-preview'>
+                                        <img src={imagePreview} alt='Preview' />
+                                        <div className='admin-panel__image-preview-text'>
+                                            📤 Готово до завантаження
+                                        </div>
                                     </div>
                                 )}
                                 {form.imageUrl && !imagePreview && (
-                                    <div style={{ fontSize: 12, color: '#27ae60', marginTop: 4 }}>✓ Зображення вже завантажено</div>
+                                    <div className='admin-panel__image-status'>
+                                        ✓ Зображення вже завантажено
+                                    </div>
                                 )}
                             </div>
 
-                            <div>
-                                <label style={{ display: 'block', marginBottom: 4, fontWeight: 600 }}>
-                                    Опис
-                                </label>
+                            <div className='admin-panel__form-group'>
+                                <label className='admin-panel__label'>Опис</label>
                                 <textarea
+                                    className='admin-panel__textarea'
                                     placeholder='Короткий опис особливостей та переваг...'
                                     value={form.description || ''}
-                                    onChange={e => setForm(f => ({ ...f, description: e.target.value }))}
+                                    onChange={e =>
+                                        setForm(f => ({ ...f, description: e.target.value }))
+                                    }
                                     rows={4}
-                                    style={{ width: '100%', padding: 10, border: '1px solid #ddd', borderRadius: 6, resize: 'vertical' }}
                                 />
                             </div>
                         </div>
 
-                        <div style={{ display: 'flex', gap: 8, marginTop: 16 }}>
+                        <div className='admin-panel__form-actions'>
                             <button
                                 onClick={save}
                                 disabled={saving || uploading}
-                                style={{ flex: 1, padding: 12, background: '#ff6b35', color: 'white', border: 'none', borderRadius: 6, fontWeight: 600 }}
+                                className='admin-panel__btn admin-panel__btn--primary'
                             >
-                                {uploading ? '📤 Завантаження фото...' : saving ? '💾 Збереження...' : form.id ? '✏️ Оновити' : '➕ Додати'}
+                                {uploading
+                                    ? '📤 Завантаження фото...'
+                                    : saving
+                                    ? '💾 Збереження...'
+                                    : form.id
+                                    ? '✏️ Оновити'
+                                    : '➕ Додати'}
                             </button>
                             {form.id && (
                                 <button
                                     onClick={reset}
                                     disabled={saving}
-                                    style={{ padding: 12, background: '#e0e0e0', border: 'none', borderRadius: 6, fontWeight: 600 }}
+                                    className='admin-panel__btn admin-panel__btn--secondary'
                                 >
                                     ✕ Скасувати
                                 </button>
@@ -480,104 +443,100 @@ export default function AdminPanel() {
                     </div>
 
                     {/* Карточка: Технічні характеристики */}
-                    <div style={{ background: '#f9f9f9', padding: 16, borderRadius: 8 }}>
+                    <div className='admin-panel__card'>
                         <h3>Технічні характеристики</h3>
-                        <div style={{ display: 'grid', gap: 12 }}>
-                            <label style={{ display: 'flex', alignItems: 'center', gap: 8, fontWeight: 600 }}>
+                        <div className='admin-panel__form'>
+                            <label className='admin-panel__checkbox-label'>
                                 <input
                                     type='checkbox'
                                     checked={!!form.isBestSeller}
-                                    onChange={e => setForm(f => ({ ...f, isBestSeller: e.target.checked }))}
+                                    onChange={e =>
+                                        setForm(f => ({ ...f, isBestSeller: e.target.checked }))
+                                    }
                                 />
                                 Хіт продажу
                             </label>
 
-                            <div>
-                                <label style={{ display: 'block', marginBottom: 4, fontWeight: 600 }}>
-                                    Форма скла
-                                </label>
+                            <div className='admin-panel__form-group'>
+                                <label className='admin-panel__label'>Форма скла</label>
                                 <input
                                     type='text'
+                                    className='admin-panel__input'
                                     placeholder='Напр., Пряме / Кутове / П-подібне'
                                     value={form.glassType || ''}
-                                    onChange={e => setForm(f => ({ ...f, glassType: e.target.value }))}
-                                    style={{ width: '100%', padding: 10, border: '1px solid #ddd', borderRadius: 6 }}
+                                    onChange={e =>
+                                        setForm(f => ({ ...f, glassType: e.target.value }))
+                                    }
                                 />
                             </div>
 
-                            <div>
-                                <label style={{ display: 'block', marginBottom: 4, fontWeight: 600 }}>
-                                    Матеріал виготовлення
-                                </label>
+                            <div className='admin-panel__form-group'>
+                                <label className='admin-panel__label'>Матеріал виготовлення</label>
                                 <input
-                                    
                                     type='text'
+                                    className='admin-panel__input'
                                     placeholder='Напр., Сталь / Чавун'
                                     value={form.material || ''}
-                                    onChange={e => setForm(f => ({ ...f, material: e.target.value }))}
-                                    style={{ width: '100%', padding: 10, border: '1px solid #ddd', borderRadius: 6 }}
+                                    onChange={e =>
+                                        setForm(f => ({ ...f, material: e.target.value }))
+                                    }
                                 />
                             </div>
 
-                            <div>
-                                <label style={{ display: 'block', marginBottom: 4, fontWeight: 600 }}>
-                                    Підведення повітря
-                                </label>
+                            <div className='admin-panel__form-group'>
+                                <label className='admin-panel__label'>Підведення повітря</label>
                                 <input
                                     type='text'
+                                    className='admin-panel__input'
                                     placeholder='Напр., Зовнішнє / Примусове'
                                     value={form.airSupply || ''}
-                                    onChange={e => setForm(f => ({ ...f, airSupply: e.target.value }))}
-                                    style={{ width: '100%', padding: 10, border: '1px solid #ddd', borderRadius: 6 }}
+                                    onChange={e =>
+                                        setForm(f => ({ ...f, airSupply: e.target.value }))
+                                    }
                                 />
                             </div>
 
-                            <div>
-                                <label style={{ display: 'block', marginBottom: 4, fontWeight: 600 }}>
-                                    Розміри та форма
-                                </label>
+                            <div className='admin-panel__form-group'>
+                                <label className='admin-panel__label'>Розміри та форма</label>
                                 <input
                                     type='text'
+                                    className='admin-panel__input'
                                     placeholder='Напр., 700×450 мм, кутова'
                                     value={form.dimensions || ''}
-                                    onChange={e => setForm(f => ({ ...f, dimensions: e.target.value }))}
-                                    style={{ width: '100%', padding: 10, border: '1px solid #ddd', borderRadius: 6 }}
+                                    onChange={e =>
+                                        setForm(f => ({ ...f, dimensions: e.target.value }))
+                                    }
                                 />
                             </div>
 
-                            <div>
-                                <label style={{ display: 'block', marginBottom: 4, fontWeight: 600 }}>
-                                    Діаметр димоходу
-                                </label>
+                            <div className='admin-panel__form-group'>
+                                <label className='admin-panel__label'>Діаметр димоходу</label>
                                 <input
                                     type='text'
+                                    className='admin-panel__input'
                                     placeholder='Напр., 180 мм'
                                     value={form.chimneyDiameter || ''}
-                                    onChange={e => setForm(f => ({ ...f, chimneyDiameter: e.target.value }))}
-                                    style={{ width: '100%', padding: 10, border: '1px solid #ddd', borderRadius: 6 }}
+                                    onChange={e =>
+                                        setForm(f => ({ ...f, chimneyDiameter: e.target.value }))
+                                    }
                                 />
                             </div>
                         </div>
                     </div>
 
-                    {/* СПИСОК ТОВАРІВ З ФІЛЬТРУВАННЯМ (без змін логіки) */}
-                    <div style={{ maxHeight: '80vh', overflowY: 'auto' }}>
+                    {/* СПИСОК ТОВАРІВ З ФІЛЬТРУВАННЯМ */}
+                    <div className='admin-panel__list'>
                         <h3>📦 Товари</h3>
 
                         {/* ФІЛЬТР */}
-                        <div style={{ marginBottom: 16 }}>
+                        <div className='admin-panel__category-filters'>
                             <button
                                 onClick={() => setSelectedCategoryId(null)}
-                                style={{
-                                    padding: '6px 12px',
-                                    background: selectedCategoryId === null ? '#ff6b35' : '#e0e0e0',
-                                    color: selectedCategoryId === null ? 'white' : '#333',
-                                    border: 'none',
-                                    borderRadius: 4,
-                                    cursor: 'pointer',
-                                    marginBottom: 8,
-                                    marginRight: 8,
-                                }}
+                                className={`admin-panel__filter-btn ${
+                                    selectedCategoryId === null
+                                        ? 'admin-panel__filter-btn--active'
+                                        : ''
+                                }`}
                             >
                                 Всі ({products.length})
                             </button>
@@ -585,106 +544,48 @@ export default function AdminPanel() {
                                 <button
                                     key={c.categoryId}
                                     onClick={() => setSelectedCategoryId(c.categoryId)}
-                                    style={{
-                                        padding: '6px 12px',
-                                        background:
-                                            selectedCategoryId === c.categoryId
-                                                ? '#ff6b35'
-                                                : '#e0e0e0',
-                                        color:
-                                            selectedCategoryId === c.categoryId ? 'white' : '#333',
-                                        border: 'none',
-                                        borderRadius: 4,
-                                        cursor: 'pointer',
-                                        marginBottom: 8,
-                                        marginRight: 8,
-                                    }}
+                                    className={`admin-panel__filter-btn ${
+                                        selectedCategoryId === c.categoryId
+                                            ? 'admin-panel__filter-btn--active'
+                                            : ''
+                                    }`}
                                 >
                                     {c.name} ({productsByCategory[c.categoryId]?.length ?? 0})
                                 </button>
                             ))}
                         </div>
 
-                        <div style={{ display: 'grid', gap: 12 }}>
+                        <div className='admin-panel__items'>
                             {filteredProducts.length === 0 ? (
-                                <p style={{ color: '#999' }}>Товарів нема</p>
+                                <p className='admin-panel__no-items'>Товарів нема</p>
                             ) : (
                                 filteredProducts.map(p => (
-                                    <div
-                                        key={p.id}
-                                        style={{
-                                            background: 'white',
-                                            padding: 12,
-                                            borderRadius: 6,
-                                            border: '1px solid #eee',
-                                        }}
-                                    >
-                                        <div
-                                            style={{
-                                                display: 'flex',
-                                                gap: 12,
-                                                alignItems: 'flex-start',
-                                            }}
-                                        >
+                                    <div key={p.id} className='admin-panel__item'>
+                                        <div className='admin-panel__item-content'>
                                             {p.imageUrl && (
                                                 <img
                                                     src={p.imageUrl}
                                                     alt={p.name}
-                                                    style={{
-                                                        width: 80,
-                                                        height: 80,
-                                                        objectFit: 'cover',
-                                                        borderRadius: 4,
-                                                    }}
+                                                    className='admin-panel__item-image'
                                                 />
                                             )}
-                                            <div style={{ flex: 1 }}>
-                                                <h4 style={{ margin: '0 0 4px 0' }}>{p.name}</h4>
-                                                <p
-                                                    style={{
-                                                        margin: 0,
-                                                        fontSize: 12,
-                                                        color: '#666',
-                                                    }}
-                                                >
+                                            <div className='admin-panel__item-info'>
+                                                <h4>{p.name}</h4>
+                                                <p className='admin-panel__item-info-meta'>
                                                     {p.category} · <b>{p.price} ₴</b>
                                                 </p>
-                                                <p style={{ margin: '4px 0 0 0', fontSize: 12 }}>
-                                                    {p.description?.substring(0, 60)}...
-                                                </p>
+                                                <p>{p.description?.substring(0, 60)}...</p>
                                             </div>
-                                            <div
-                                                style={{
-                                                    display: 'flex',
-                                                    flexDirection: 'column',
-                                                    gap: 6,
-                                                }}
-                                            >
+                                            <div className='admin-panel__item-actions'>
                                                 <button
                                                     onClick={() => edit(p)}
-                                                    style={{
-                                                        padding: '6px 12px',
-                                                        background: '#ff6b35',
-                                                        color: 'white',
-                                                        border: 'none',
-                                                        borderRadius: 4,
-                                                        cursor: 'pointer',
-                                                        fontSize: 12,
-                                                    }}
+                                                    className='admin-panel__action-btn admin-panel__action-btn--edit'
                                                 >
                                                     ✏️ Редагувати
                                                 </button>
                                                 <button
                                                     onClick={() => deleteProduct(p.id)}
-                                                    style={{
-                                                        padding: '6px 12px',
-                                                        background: '#e74c3c',
-                                                        color: 'white',
-                                                        border: 'none',
-                                                        borderRadius: 4,
-                                                        cursor: 'pointer',
-                                                        fontSize: 12,
-                                                    }}
+                                                    className='admin-panel__action-btn admin-panel__action-btn--delete'
                                                 >
                                                     🗑️ Видалити
                                                 </button>
@@ -700,63 +601,45 @@ export default function AdminPanel() {
 
             {/* ТАБ: КАТЕГОРІЇ */}
             {activeTab === 'categories' && (
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 20 }}>
+                <div className='admin-panel__content'>
                     {/* ФОРМА КАТЕГОРІЇ */}
-                    <div style={{ background: '#f9f9f9', padding: 16, borderRadius: 8 }}>
+                    <div className='admin-panel__card'>
                         <h3>
                             {categoryForm.id ? '✏️ Редагувати категорію' : '➕ Додати категорію'}
                         </h3>
 
-                        <div style={{ display: 'grid', gap: 12 }}>
-                            <div>
-                                <label style={{ display: 'block', marginBottom: 4, fontWeight: 600 }}>
-                                    Назва категорії*
-                                </label>
+                        <div className='admin-panel__form'>
+                            <div className='admin-panel__form-group'>
+                                <label className='admin-panel__label'>Назва категорії*</label>
                                 <input
                                     type='text'
+                                    className='admin-panel__input'
                                     placeholder='Назва категорії...'
                                     value={categoryForm.name || ''}
-                                    onChange={e => setCategoryForm(f => ({ ...f, name: e.target.value }))}
-                                    style={{
-                                        width: '100%',
-                                        padding: 10,
-                                        border: '1px solid #ddd',
-                                        borderRadius: 6,
-                                    }}
+                                    onChange={e =>
+                                        setCategoryForm(f => ({ ...f, name: e.target.value }))
+                                    }
                                 />
                             </div>
 
-                            <div style={{ display: 'flex', gap: 8 }}>
+                            <div className='admin-panel__form-actions'>
                                 <button
                                     onClick={saveCategory}
                                     disabled={saving}
-                                    style={{
-                                        flex: 1,
-                                        padding: 12,
-                                        background: '#ff6b35',
-                                        color: 'white',
-                                        border: 'none',
-                                        borderRadius: 6,
-                                        fontWeight: 600,
-                                        cursor: saving ? 'not-allowed' : 'pointer',
-                                        opacity: saving ? 0.6 : 1,
-                                    }}
+                                    className='admin-panel__btn admin-panel__btn--primary'
                                 >
-                                    {saving ? '💾 Збереження...' : categoryForm.id ? '✏️ Оновити' : '➕ Додати'}
+                                    {saving
+                                        ? '💾 Збереження...'
+                                        : categoryForm.id
+                                        ? '✏️ Оновити'
+                                        : '➕ Додати'}
                                 </button>
 
                                 {categoryForm.id && (
                                     <button
                                         onClick={resetCategory}
                                         disabled={saving}
-                                        style={{
-                                            padding: 12,
-                                            background: '#e0e0e0',
-                                            border: 'none',
-                                            borderRadius: 6,
-                                            fontWeight: 600,
-                                            cursor: 'pointer',
-                                        }}
+                                        className='admin-panel__btn admin-panel__btn--secondary'
                                     >
                                         ✕ Скасувати
                                     </button>
@@ -766,64 +649,31 @@ export default function AdminPanel() {
                     </div>
 
                     {/* СПИСОК КАТЕГОРІЙ */}
-                    <div style={{ maxHeight: '80vh', overflowY: 'auto' }}>
+                    <div className='admin-panel__list'>
                         <h3>🏷️ Категорії ({categories.length})</h3>
-                        <div style={{ display: 'grid', gap: 12 }}>
+                        <div className='admin-panel__items'>
                             {categories.length === 0 ? (
-                                <p style={{ color: '#999' }}>Категорій нема</p>
+                                <p className='admin-panel__no-items'>Категорій нема</p>
                             ) : (
                                 categories.map(c => (
-                                    <div
-                                        key={c.categoryId}
-                                        style={{
-                                            background: 'white',
-                                            padding: 12,
-                                            borderRadius: 6,
-                                            border: '1px solid #eee',
-                                            display: 'flex',
-                                            justifyContent: 'space-between',
-                                            alignItems: 'center',
-                                        }}
-                                    >
-                                        <div>
-                                            <h4 style={{ margin: 0 }}>{c.name}</h4>
-                                            <p
-                                                style={{
-                                                    margin: '4px 0 0 0',
-                                                    fontSize: 12,
-                                                    color: '#666',
-                                                }}
-                                            >
+                                    <div key={c.categoryId} className='admin-panel__category-item'>
+                                        <div className='admin-panel__category-info'>
+                                            <h4>{c.name}</h4>
+                                            <p>
                                                 {productsByCategory[c.categoryId]?.length ?? 0}{' '}
                                                 товарів
                                             </p>
                                         </div>
-                                        <div style={{ display: 'flex', gap: 6 }}>
+                                        <div className='admin-panel__category-actions'>
                                             <button
                                                 onClick={() => editCategory(c)}
-                                                style={{
-                                                    padding: '6px 12px',
-                                                    background: '#ff6b35',
-                                                    color: 'white',
-                                                    border: 'none',
-                                                    borderRadius: 4,
-                                                    cursor: 'pointer',
-                                                    fontSize: 12,
-                                                }}
+                                                className='admin-panel__action-btn admin-panel__action-btn--edit'
                                             >
                                                 ✏️ Редагувати
                                             </button>
                                             <button
                                                 onClick={() => deleteCategory(c.categoryId)}
-                                                style={{
-                                                    padding: '6px 12px',
-                                                    background: '#e74c3c',
-                                                    color: 'white',
-                                                    border: 'none',
-                                                    borderRadius: 4,
-                                                    cursor: 'pointer',
-                                                    fontSize: 12,
-                                                }}
+                                                className='admin-panel__action-btn admin-panel__action-btn--delete'
                                             >
                                                 🗑️ Видалити
                                             </button>

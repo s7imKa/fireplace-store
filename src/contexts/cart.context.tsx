@@ -1,4 +1,4 @@
-import { useState, type ReactNode } from 'react'
+import { useEffect, useState, type ReactNode } from 'react'
 import type { CartItem } from '../types/order.type'
 import { CartContext } from './context'
 
@@ -12,7 +12,44 @@ interface CartContextValue {
 }
 
 export function CartProvider({ children }: { children: ReactNode }) {
-    const [items, setItems] = useState<CartItem[]>([])
+    const STORAGE_KEY = 'cart-items'
+
+    const [items, setItems] = useState<CartItem[]>(() => {
+        try {
+            const raw = localStorage.getItem(STORAGE_KEY)
+            if (!raw) return []
+            const parsed = JSON.parse(raw)
+            if (!Array.isArray(parsed)) return []
+            // Мінімальна валідація записів
+            return parsed
+                .filter(
+                    (i: any) =>
+                        i &&
+                        typeof i.productId === 'string' &&
+                        typeof i.price === 'number' &&
+                        i.qty,
+                )
+                .map((i: any) => ({
+                    productId: i.productId,
+                    name: i.name || '',
+                    price: Number(i.price) || 0,
+                    qty: Math.max(1, Math.floor(Number(i.qty) || 1)),
+                    ...(i.imageUrl ? { imageUrl: i.imageUrl } : {}),
+                }))
+        } catch (e) {
+            console.warn('Cart localStorage parse error:', e)
+            return []
+        }
+    })
+
+    // Зберігаємо у localStorage при зміні
+    useEffect(() => {
+        try {
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(items))
+        } catch (e) {
+            console.warn('Cart localStorage save error:', e)
+        }
+    }, [items])
 
     const addItem = (item: CartItem) => {
         setItems(prev => {

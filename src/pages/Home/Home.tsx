@@ -41,11 +41,6 @@ const Home: FC<HomeProps> = ({ searchQuery }) => {
     )
 
     const addToCart = (p: Product) => {
-        if (!user) {
-            navigate('/login', { state: { redirectTo: '/', action: 'addToCart', product: p } })
-            return
-        }
-
         addItem({
             productId: p.id,
             name: p.name,

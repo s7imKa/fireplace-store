@@ -1,6 +1,6 @@
 import { collection, getDocs, query, Timestamp, where } from 'firebase/firestore'
 import { useContext, useEffect, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import { AuthContext } from '../../contexts/auth.context'
 import { auth, db } from '../../firebase'
 import { logout } from '../../hooks/useAuthActions'
@@ -54,6 +54,8 @@ export default function Profile() {
     const [expanded, setExpanded] = useState<ExpandedOrder>({})
     const [showLogoutConfirm, setShowLogoutConfirm] = useState(false)
 
+    const storageKey = user ? `orders-cache-${user.uid}` : null
+
     // Редірект якщо не авторизований
     useEffect(() => {
         if (!authLoading && !user) {
@@ -63,6 +65,21 @@ export default function Profile() {
 
     // Завантаження замовлень
     useEffect(() => {
+        // Попередньо показуємо кеш, якщо є
+        if (storageKey) {
+            try {
+                const cached = localStorage.getItem(storageKey)
+                if (cached) {
+                    const parsed = JSON.parse(cached)
+                    if (Array.isArray(parsed)) {
+                        setOrders(parsed)
+                    }
+                }
+            } catch (e) {
+                console.warn('Orders cache read error:', e)
+            }
+        }
+
         const load = async () => {
             setLoading(true)
             setError(null)
@@ -78,6 +95,9 @@ export default function Profile() {
                 const list: Order[] = snap.docs.map(d => ({ id: d.id, ...(d.data() as Order) }))
                 list.sort((a, b) => toMillis(b.createdAt) - toMillis(a.createdAt))
                 setOrders(list)
+                if (storageKey) {
+                    localStorage.setItem(storageKey, JSON.stringify(list))
+                }
             } catch (e: any) {
                 console.error('Load orders error:', e)
                 setError(e?.message || 'Помилка завантаження замовлень')
@@ -86,7 +106,7 @@ export default function Profile() {
             }
         }
         load()
-    }, [])
+    }, [storageKey])
 
     const toggleExpanded = (orderId: string) => {
         setExpanded(prev => ({
@@ -120,170 +140,185 @@ export default function Profile() {
         STATUS_LABELS[status] || { label: status, color: '#95a5a6' }
 
     return (
-        <div className='profile-container'>
-            {/* Header з кнопкою вихода */}
-            <div className='profile-header'>
-                <h1>👤 Мій профіль</h1>
-                <button className='btn-logout' onClick={() => setShowLogoutConfirm(true)}>
-                    Вийти
-                </button>
-            </div>
-
-            {/* Основна інформація користувача */}
-            <div className='user-info-card'>
-                <div className='card-header'>
-                    <h2>Інформація користувача</h2>
-                </div>
-                <div className='card-content'>
-                    <div className='info-row'>
-                        <label>Email:</label>
-                        <span className='info-value'>{user.email}</span>
+        <div className='container '>
+            <div className='profile-container '>
+                {/* Основна інформація користувача */}
+                <Link to='/' className='cart-page__back-link linkhome'>
+                    ← До головної
+                </Link>
+                <div className='user-info-card'>
+                    <div className='card-header'>
+                        <h3>👤 Мій профіль</h3>
                     </div>
-                </div>
-            </div>
-
-            {/* Помилка */}
-            {error && <div className='error-message'>⚠️ {error}</div>}
-
-            {/* Замовлення */}
-            <div className='orders-card'>
-                <div className='card-header'>
-                    <h2>📦 Мої замовлення</h2>
-                    <span className='orders-count'>({orders.length})</span>
-                </div>
-
-                {orders.length === 0 ? (
-                    <div className='empty-state'>
-                        <div className='empty-icon'>📭</div>
-                        <p>У вас ще немає замовлень</p>
-                        <a href='/' className='btn-shop'>
-                            Перейти до магазину
-                        </a>
-                    </div>
-                ) : (
-                    <div className='orders-list'>
-                        {orders.map(order => {
-                            const isExpanded = expanded[order.id!]
-                            const status = statusInfo(order.status)
-
-                            return (
-                                <div key={order.id} className='order-item'>
-                                    <div
-                                        className='order-header'
-                                        onClick={() => toggleExpanded(order.id!)}
-                                    >
-                                        <div className='order-summary'>
-                                            <div className='order-number'>
-                                                Замовлення #{order.id?.slice(0, 8)}
-                                            </div>
-                                            <div className='order-meta'>
-                                                <span className='order-date'>
-                                                    📅 {formatDate(order.createdAt)}
-                                                </span>
-                                                <span
-                                                    className='order-status'
-                                                    style={{ backgroundColor: status.color }}
-                                                >
-                                                    {status.label}
-                                                </span>
-                                                <span className='order-total'>
-                                                    Сума: <strong>{order.total} ₴</strong>
-                                                </span>
-                                            </div>
-                                        </div>
-                                        <div className={`expand-icon ${isExpanded ? 'open' : ''}`}>
-                                            ▼
-                                        </div>
-                                    </div>
-
-                                    {/* Деталі замовлення */}
-                                    {isExpanded && (
-                                        <div className='order-details'>
-                                            <div className='details-section'>
-                                                <h4>Товари в замовленні:</h4>
-                                                <ul className='items-list'>
-                                                    {order.items.map((item, idx) => (
-                                                        <li key={idx} className='item-line'>
-                                                            <span className='item-name'>
-                                                                {item.name}
-                                                            </span>
-                                                            <span className='item-qty'>
-                                                                x{item.qty}
-                                                            </span>
-                                                            <span className='item-price'>
-                                                                {item.price * item.qty} ₴
-                                                            </span>
-                                                        </li>
-                                                    ))}
-                                                </ul>
-                                            </div>
-
-                                            {/* Інформація про доставку */}
-                                            {order.shipping ? (
-                                                <div className='details-section'>
-                                                    <h4>Адреса доставки:</h4>
-                                                    <div className='shipping-info'>
-                                                        <p>
-                                                            <strong>Отримувач:</strong>{' '}
-                                                            {order.shipping.lastName}{' '}
-                                                            {order.shipping.firstName}
-                                                        </p>
-                                                        <p>
-                                                            <strong>Телефон:</strong>{' '}
-                                                            {order.shipping.phone}
-                                                        </p>
-                                                        <p>
-                                                            <strong>Місто:</strong>{' '}
-                                                            {order.shipping.city}
-                                                        </p>
-                                                        <p>
-                                                            <strong>Відділення:</strong>{' '}
-                                                            {order.shipping.novaPoshtaBranch}
-                                                        </p>
-                                                        {order.shipping.comment && (
-                                                            <p>
-                                                                <strong>Коментар:</strong>{' '}
-                                                                {order.shipping.comment}
-                                                            </p>
-                                                        )}
-                                                    </div>
-                                                </div>
-                                            ) : (
-                                                <div className='details-section'>
-                                                    <p className='no-shipping'>
-                                                        ℹ️ Інформація про доставку ще не вказана
-                                                    </p>
-                                                </div>
-                                            )}
-                                        </div>
-                                    )}
-                                </div>
-                            )
-                        })}
-                    </div>
-                )}
-            </div>
-
-            {/* Модальне вікно підтвердження виходу */}
-            {showLogoutConfirm && (
-                <div className='modal-overlay'>
-                    <div className='modal-content'>
-                        <h3>Вихід з акаунту</h3>
-                        <p>Ви впевнені, що хочете вийти?</p>
-                        <div className='modal-actions'>
+                    <div className='card-content'>
+                        <div className='info-row'>
+                            <div>
+                                {' '}
+                                <label style={{ marginRight: '20px' }}>Email:</label>
+                                <span className='info-value'>{user.email}</span>
+                            </div>
                             <button
-                                className='btn-cancel'
-                                onClick={() => setShowLogoutConfirm(false)}
+                                className='btn-logout'
+                                onClick={() => setShowLogoutConfirm(true)}
                             >
-                                Скасувати
-                            </button>
-                            <button className='btn-confirm' onClick={handleLogout}>
                                 Вийти
                             </button>
                         </div>
                     </div>
                 </div>
-            )}
+
+                {/* Помилка */}
+                {error && <div className='error-message'>⚠️ {error}</div>}
+
+                {/* Замовлення */}
+                <div className='orders-card'>
+                    <div className='card-header'>
+                        <h2>📦 Мої замовлення</h2>
+                        <span className='orders-count'>{orders.length}</span>
+                    </div>
+
+                    {orders.length === 0 ? (
+                        <div className='empty-state'>
+                            <div className='empty-icon'>📭</div>
+                            <p>У вас ще немає замовлень</p>
+                            <a href='/' className='btn-shop'>
+                                Перейти до магазину
+                            </a>
+                        </div>
+                    ) : (
+                        <div className='orders-list'>
+                            {orders.map(order => {
+                                const isExpanded = expanded[order.id!]
+                                const status = statusInfo(order.status)
+
+                                return (
+                                    <div key={order.id} className='order-item'>
+                                        <div
+                                            className='order-header'
+                                            onClick={() => toggleExpanded(order.id!)}
+                                        >
+                                            <div className='order-summary'>
+                                                <div className='order-number'>
+                                                    Замовлення #{order.id?.slice(0, 8)}
+                                                </div>
+                                                <div className='order-meta'>
+                                                    <span className='order-date'>
+                                                        📅 {formatDate(order.createdAt)}
+                                                    </span>
+                                                    <span
+                                                        className='order-status'
+                                                        style={{ backgroundColor: status.color }}
+                                                    >
+                                                        {status.label}
+                                                    </span>
+                                                    <span className='order-total'>
+                                                        Сума: <strong>{order.total} ₴</strong>
+                                                    </span>
+                                                </div>
+                                            </div>
+                                            <div
+                                                className={`expand-icon ${
+                                                    isExpanded ? 'open' : ''
+                                                }`}
+                                            >
+                                                ▼
+                                            </div>
+                                        </div>
+
+                                        {/* Деталі замовлення */}
+                                        {isExpanded && (
+                                            <div className='order-details'>
+                                                <div className='details-section'>
+                                                    <h4>Товари в замовленні:</h4>
+                                                    <ul className='items-list'>
+                                                        {order.items.map((item, idx) => (
+                                                            <li key={idx} className='item-line'>
+                                                                <span className='item-name'>
+                                                                    {item.name}
+                                                                </span>
+                                                                <span className='item-qty'>
+                                                                    x{item.qty}
+                                                                </span>
+                                                                <span className='item-price'>
+                                                                    {item.price * item.qty} ₴
+                                                                </span>
+                                                            </li>
+                                                        ))}
+                                                    </ul>
+                                                </div>
+
+                                                {/* Інформація про доставку */}
+                                                {order.shipping ? (
+                                                    <div className='details-section'>
+                                                        <h4>Адреса доставки:</h4>
+                                                        <div className='shipping-info'>
+                                                            <p>
+                                                                <strong>Отримувач:</strong>{' '}
+                                                                {order.shipping.lastName}{' '}
+                                                                {order.shipping.firstName}
+                                                            </p>
+                                                            <p>
+                                                                <strong>Телефон:</strong>{' '}
+                                                                {order.shipping.phone}
+                                                            </p>
+                                                            <p>
+                                                                <strong>Місто:</strong>{' '}
+                                                                {order.shipping.city}
+                                                            </p>
+                                                            <p>
+                                                                <strong>Відділення:</strong>{' '}
+                                                                {order.shipping.novaPoshtaBranch}
+                                                            </p>
+                                                            {order.shipping.comment && (
+                                                                <p>
+                                                                    <strong>Коментар:</strong>{' '}
+                                                                    {order.shipping.comment}
+                                                                </p>
+                                                            )}
+                                                        </div>
+                                                    </div>
+                                                ) : (
+                                                    <div className='details-section'>
+                                                        <p className='no-shipping'>
+                                                            ℹ️ Інформація про доставку ще не вказана
+                                                        </p>
+                                                    </div>
+                                                )}
+                                            </div>
+                                        )}
+                                    </div>
+                                )
+                            })}
+                        </div>
+                    )}
+                </div>
+
+                {/* Модальне вікно підтвердження виходу */}
+                {showLogoutConfirm && (
+                    <div className='modal-overlay' onClick={() => setShowLogoutConfirm(false)}>
+                        <div
+                            className='modal-content'
+                            onClick={e => {
+                                e.stopPropagation()
+                            }}
+                        >
+                            <h3>Вихід з акаунту</h3>
+                            <p>Ви впевнені, що хочете вийти?</p>
+                            <div className='modal-actions'>
+                                <button
+                                    className='btn-cancel'
+                                    onClick={() => setShowLogoutConfirm(false)}
+                                >
+                                    Скасувати
+                                </button>
+                                <button className='btn-confirm' onClick={handleLogout}>
+                                    Вийти
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                )}
+            </div>
         </div>
     )
 }
