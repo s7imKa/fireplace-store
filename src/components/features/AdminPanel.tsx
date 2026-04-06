@@ -13,7 +13,7 @@ interface FormState {
     name: string
     price: number
     description: string
-    imageUrl: string
+    images: string[] // ОНОВЛЕНО: масив зображень
     categoryId: string
     isBestSeller: boolean
     glassType: string
@@ -21,6 +21,7 @@ interface FormState {
     airSupply: string
     dimensions: string
     chimneyDiameter: string
+    characteristics: string
 }
 
 interface CategoryFormState {
@@ -40,7 +41,7 @@ export default function AdminPanel() {
             name: '',
             price: 0,
             description: '',
-            imageUrl: '',
+            images: [],
             categoryId: '',
             isBestSeller: false,
             glassType: '',
@@ -48,6 +49,7 @@ export default function AdminPanel() {
             airSupply: '',
             dimensions: '',
             chimneyDiameter: '',
+            characteristics: '',
         }),
         [],
     )
@@ -57,14 +59,14 @@ export default function AdminPanel() {
     const [form, setForm] = useState<FormState>(empty)
     const [categoryForm, setCategoryForm] = useState<CategoryFormState>(emptyCategory)
 
-    const [imageFile, setImageFile] = useState<File | null>(null)
-    const [imagePreview, setImagePreview] = useState<string>('')
+    const [imageFiles, setImageFiles] = useState<File[]>([])
+    const [imagePreviews, setImagePreviews] = useState<string[]>([])
     const [uploading, setUploading] = useState(false)
     const [saving, setSaving] = useState(false)
     const [error, setError] = useState<string | null>(null)
     const [successMsg, setSuccessMsg] = useState<string | null>(null)
 
-    const { user, loading, isAdmin } = useContext(AuthContext)
+    const { loading, isAdmin } = useContext(AuthContext)
     const navigate = useNavigate()
 
     // Перевірка прав адміна (чекаємо доки auth завантажиться)
@@ -116,24 +118,41 @@ export default function AdminPanel() {
     // ===== УПРАВЛІННЯ ТОВАРАМИ =====
 
     const handleImageSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
-        const file = e.target.files?.[0]
-        if (!file) return
+        const files = e.target.files
+        if (!files || files.length === 0) return
 
-        setImageFile(file)
+        const newFiles = Array.from(files)
+        setImageFiles(prev => [...prev, ...newFiles])
         setError(null)
 
-        const reader = new FileReader()
-        reader.onload = event => {
-            setImagePreview(event.target?.result as string)
-        }
-        reader.readAsDataURL(file)
+        // Створюємо попередні перегляди
+        newFiles.forEach(file => {
+            const reader = new FileReader()
+            reader.onload = event => {
+                setImagePreviews(prev => [...prev, event.target?.result as string])
+            }
+            reader.readAsDataURL(file)
+        })
+    }
+
+    const removeImage = (index: number) => {
+        setImageFiles(prev => prev.filter((_, i) => i !== index))
+        setImagePreviews(prev => prev.filter((_, i) => i !== index))
+    }
+
+    const removeExistingImage = (index: number) => {
+        setForm(prev => ({
+            ...prev,
+            images: prev.images.filter((_, i) => i !== index),
+        }))
     }
 
     const validate = (): string | null => {
         if (!form.name?.trim()) return 'Вкажіть назву товару'
         if (!form.price || form.price <= 0) return 'Вкажіть коректну ціну'
         if (!form.categoryId) return 'Оберіть категорію'
-        if (!imageFile && !form.imageUrl) return 'Завантажте зображення'
+        if (imageFiles.length === 0 && form.images.length === 0)
+            return 'Завантажте хоча б одне зображення'
         return null
     }
 
@@ -148,11 +167,15 @@ export default function AdminPanel() {
 
         setSaving(true)
         try {
-            let imageUrl = form.imageUrl
+            const uploadedImages = [...form.images]
 
-            if (imageFile) {
+            // Завантажуємо нові файли
+            if (imageFiles.length > 0) {
                 setUploading(true)
-                imageUrl = await uploadImageToImgBB(imageFile)
+                for (const file of imageFiles) {
+                    const url = await uploadImageToImgBB(file)
+                    uploadedImages.push(url)
+                }
                 setUploading(false)
             }
 
@@ -160,7 +183,8 @@ export default function AdminPanel() {
                 name: form.name?.trim(),
                 price: form.price,
                 description: form.description?.trim(),
-                imageUrl,
+                images: uploadedImages,
+                imageUrl: uploadedImages[0] || '', // backward compatibility
                 categoryId: form.categoryId,
                 category: categories.find(c => c.categoryId === form.categoryId)?.name ?? '',
                 isBestSeller: !!form.isBestSeller,
@@ -169,6 +193,7 @@ export default function AdminPanel() {
                 airSupply: form.airSupply?.trim() || '',
                 dimensions: form.dimensions?.trim() || '',
                 chimneyDiameter: form.chimneyDiameter?.trim() || '',
+                characteristics: form.characteristics?.trim() || '',
             }
 
             if (form.id) {
@@ -201,7 +226,7 @@ export default function AdminPanel() {
             name: p.name,
             price: p.price,
             description: p.description,
-            imageUrl: p.imageUrl,
+            images: p.images || (p.imageUrl ? [p.imageUrl] : []),
             categoryId: p.categoryId,
             isBestSeller: !!p.isBestSeller,
             glassType: p.glassType || '',
@@ -209,16 +234,17 @@ export default function AdminPanel() {
             airSupply: p.airSupply || '',
             dimensions: p.dimensions || '',
             chimneyDiameter: p.chimneyDiameter || '',
+            characteristics: p.characteristics || '',
         })
-        setImageFile(null)
-        setImagePreview('')
+        setImageFiles([])
+        setImagePreviews([])
         setActiveTab('products')
     }
 
     const reset = () => {
         setForm(empty)
-        setImageFile(null)
-        setImagePreview('')
+        setImageFiles([])
+        setImagePreviews([])
     }
 
     const deleteProduct = async (id: string) => {
@@ -379,25 +405,57 @@ export default function AdminPanel() {
 
                             <div className='admin-panel__form-group'>
                                 <label className='admin-panel__label'>
-                                    Фото товару* (JPG, PNG, WebP, GIF)
+                                    Фото товару* (JPG, PNG, WebP, GIF) - можна обрати декілька
                                 </label>
                                 <input
                                     type='file'
                                     accept='image/jpeg,image/png,image/webp,image/gif'
                                     onChange={handleImageSelect}
                                     disabled={uploading || saving}
+                                    multiple
                                 />
-                                {imagePreview && (
-                                    <div className='admin-panel__image-preview'>
-                                        <img src={imagePreview} alt='Preview' />
-                                        <div className='admin-panel__image-preview-text'>
-                                            📤 Готово до завантаження
-                                        </div>
+
+                                {/* Попередній перегляд нових фото */}
+                                {imagePreviews.length > 0 && (
+                                    <div className='admin-panel__images-grid'>
+                                        {imagePreviews.map((preview, index) => (
+                                            <div key={index} className='admin-panel__image-preview'>
+                                                <img src={preview} alt={`Preview ${index + 1}`} />
+                                                <button
+                                                    type='button'
+                                                    onClick={() => removeImage(index)}
+                                                    className='admin-panel__image-remove'
+                                                    disabled={uploading || saving}
+                                                >
+                                                    ✕
+                                                </button>
+                                                <div className='admin-panel__image-preview-text'>
+                                                    📤 Готово до завантаження
+                                                </div>
+                                            </div>
+                                        ))}
                                     </div>
                                 )}
-                                {form.imageUrl && !imagePreview && (
-                                    <div className='admin-panel__image-status'>
-                                        ✓ Зображення вже завантажено
+
+                                {/* Вже завантажені фото */}
+                                {form.images.length > 0 && (
+                                    <div className='admin-panel__images-grid'>
+                                        {form.images.map((url, index) => (
+                                            <div key={index} className='admin-panel__image-preview'>
+                                                <img src={url} alt={`Фото ${index + 1}`} />
+                                                <button
+                                                    type='button'
+                                                    onClick={() => removeExistingImage(index)}
+                                                    className='admin-panel__image-remove'
+                                                    disabled={uploading || saving}
+                                                >
+                                                    ✕
+                                                </button>
+                                                <div className='admin-panel__image-status'>
+                                                    ✓ Завантажено
+                                                </div>
+                                            </div>
+                                        ))}
                                     </div>
                                 )}
                             </div>
@@ -412,6 +470,20 @@ export default function AdminPanel() {
                                         setForm(f => ({ ...f, description: e.target.value }))
                                     }
                                     rows={4}
+                                />
+                            </div>
+
+                            <div className='admin-panel__form-group'>
+                                <label className='admin-panel__label'>
+                                    Загальні характеристики
+                                </label>
+                                <textarea
+                                    className='admin-panel__input'
+                                    placeholder='Напр., Настінний '
+                                    value={form.characteristics || ''}
+                                    onChange={e =>
+                                        setForm(f => ({ ...f, characteristics: e.target.value }))
+                                    }
                                 />
                             </div>
                         </div>

@@ -1,5 +1,6 @@
 import type { Dispatch, FC, SetStateAction } from 'react'
 import { SlBasket } from 'react-icons/sl'
+import { Link } from 'react-router-dom'
 import type { FiltersState, SortValue } from '../../../pages/Home/type.home'
 import type { Category, Product } from '../../../types'
 import './ProductList.scss'
@@ -83,6 +84,7 @@ const ProductList: FC<Props> = ({
                         {filteredProducts.map(p => {
                             const isHit = !!p.isBestSeller
                             const discounted = Math.round(p.price * 1.05)
+                            const mainImage = p.images?.[0] || p.imageUrl || ''
 
                             return (
                                 <div key={p.id} className='product-card'>
@@ -95,80 +97,85 @@ const ProductList: FC<Props> = ({
                                         </>
                                     )}
 
-                                    {p.imageUrl && (
-                                        <div className='product-card__image'>
-                                            <img src={p.imageUrl} alt={p.name} />
+                                    <Link
+                                        to={`/product-detail/${p.id}`}
+                                        className='product-card__link'
+                                    >
+                                        {mainImage && (
+                                            <div className='product-card__image'>
+                                                <img src={mainImage} alt={p.name} />
+                                            </div>
+                                        )}
+
+                                        <div className='product-card__info'>
+                                            <h3 className='product-card__name'>{p.name}</h3>
+
+                                            <div className='product-card__specs'>
+                                                {p.material && (
+                                                    <p className='product-card__spec'>
+                                                        <span>Матеріал:</span> {p.material}
+                                                    </p>
+                                                )}
+                                                {p.dimensions && (
+                                                    <p className='product-card__spec'>
+                                                        <span>Розмір фасаду, ШхВ:</span>{' '}
+                                                        {p.dimensions}
+                                                    </p>
+                                                )}
+                                                {p.glassType && (
+                                                    <p className='product-card__spec'>
+                                                        <span>Форма:</span> {p.glassType}
+                                                    </p>
+                                                )}
+                                                {p.airSupply && (
+                                                    <p className='product-card__spec'>
+                                                        <span>Підведення повітря:</span>{' '}
+                                                        {p.airSupply}
+                                                    </p>
+                                                )}
+                                                {p.chimneyDiameter && (
+                                                    <p className='product-card__spec'>
+                                                        <span>Діаметр димоходу:</span>{' '}
+                                                        {p.chimneyDiameter}
+                                                    </p>
+                                                )}
+                                                <p className='product-card__spec'>
+                                                    <span>Країна виробник:</span> Польща
+                                                </p>
+                                            </div>
                                         </div>
-                                    )}
+                                    </Link>
 
-                                    <div className='product-card__info'>
-                                        <h3 className='product-card__name'>{p.name}</h3>
-
-                                        <div className='product-card__specs'>
-                                            {p.material && (
-                                                <p className='product-card__spec'>
-                                                    <span>Матеріал:</span> {p.material}
-                                                </p>
-                                            )}
-                                            {p.dimensions && (
-                                                <p className='product-card__spec'>
-                                                    <span>Розмір фасаду, ШхВ:</span> {p.dimensions}
-                                                </p>
-                                            )}
-                                            {p.glassType && (
-                                                <p className='product-card__spec'>
-                                                    <span>Форма:</span> {p.glassType}
-                                                </p>
-                                            )}
-                                            {p.airSupply && (
-                                                <p className='product-card__spec'>
-                                                    <span>Підведення повітря:</span> {p.airSupply}
-                                                </p>
-                                            )}
-                                            {p.chimneyDiameter && (
-                                                <p className='product-card__spec'>
-                                                    <span>Діаметр димоходу:</span>{' '}
-                                                    {p.chimneyDiameter}
-                                                </p>
-                                            )}
-                                            <p className='product-card__spec'>
-                                                <span>Країна виробник:</span> Польща
-                                            </p>
-                                        </div>
-
-                                        <div className='product-card__footer'>
-                                            {isHit ? (
-                                                <div className='product-card__price-block'>
-                                                    <span className='product-card__price-old'>
-                                                        {discounted}
-                                                        <span className='product-card__price-grn'>
-                                                            грн
-                                                        </span>
+                                    <div className='product-card__footer'>
+                                        {isHit ? (
+                                            <div className='product-card__price-block'>
+                                                <span className='product-card__price-old'>
+                                                    {discounted}
+                                                    <span className='product-card__price-grn'>
+                                                        грн
                                                     </span>
-                                                    <span className='product-card__price-new'>
-                                                        {p.price}{' '}
-                                                        <span className='product-card__price-grn'>
-                                                            грн
-                                                        </span>
-                                                    </span>
-                                                </div>
-                                            ) : (
-                                                <span className='product-card__price'>
+                                                </span>
+                                                <span className='product-card__price-new'>
                                                     {p.price}{' '}
                                                     <span className='product-card__price-grn'>
                                                         грн
                                                     </span>
                                                 </span>
-                                            )}
+                                            </div>
+                                        ) : (
+                                            <span className='product-card__price'>
+                                                {p.price}{' '}
+                                                <span className='product-card__price-grn'>грн</span>
+                                            </span>
+                                        )}
 
-                                            <button
-                                                className='product-card__add-btn'
-                                                onClick={() => onAddToCart(p)}
-                                            >
-                                                <SlBasket className='product-card__add-btn-bascet' />
-                                                В кошик
-                                            </button>
-                                        </div>
+                                        <button
+                                            className='product-card__add-btn'
+                                            onClick={() => onAddToCart(p)}
+                                        >
+                                            <SlBasket className='product-card__add-btn-bascet' />В
+                                            кошик
+                                        </button>
                                     </div>
                                 </div>
                             )

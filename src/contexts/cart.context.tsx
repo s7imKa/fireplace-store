@@ -2,15 +2,6 @@ import { useEffect, useState, type ReactNode } from 'react'
 import type { CartItem } from '../types/order.type'
 import { CartContext } from './context'
 
-interface CartContextValue {
-    items: CartItem[]
-    total: number
-    addItem: (item: CartItem) => void
-    removeItem: (productId: string) => void
-    clear: () => void
-    updateQty: (productId: string, qty: number) => void // ДОДАНО
-}
-
 export function CartProvider({ children }: { children: ReactNode }) {
     const STORAGE_KEY = 'cart-items'
 

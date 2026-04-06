@@ -5,7 +5,8 @@ export interface Product {
     name: string
     price: number
     description: string
-    imageUrl: string
+    imageUrl?: string // backward compatibility
+    images: string[] // НОВЕ: масив зображень
 
     // ДОДАНО: технічні характеристики
     isBestSeller: boolean
@@ -14,4 +15,5 @@ export interface Product {
     airSupply: string
     dimensions: string
     chimneyDiameter: string
+    characteristics: string
 }

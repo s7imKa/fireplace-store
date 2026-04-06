@@ -6,6 +6,7 @@ import Profile from './components/features/Profile'
 import Header from './components/layout/Header/Header'
 import Cart from './pages/Cart/Cart'
 import Home from './pages/Home/Home'
+import ProductDetail from './pages/ProductDetail/ProductDetail'
 
 function App() {
     const [searchQuery, setSearchQuery] = useState('')
@@ -16,6 +17,7 @@ function App() {
             <main>
                 <Routes>
                     <Route path='/' element={<Home searchQuery={searchQuery} />} />
+                    <Route path='/product-detail/:id' element={<ProductDetail />} />
                     <Route path='/profile' element={<Profile />} />
                     <Route path='/login' element={<Login />} />
                     <Route path='/admin-panel' element={<AdminPanel />} />

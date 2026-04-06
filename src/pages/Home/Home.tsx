@@ -1,9 +1,8 @@
 import { useContext, useState, type FC } from 'react'
-import { useNavigate } from 'react-router-dom'
 import AsideFilter from '../../components/sections/AsideFilter/AsideFilter'
 import ProductList from '../../components/sections/ProductList/ProductList'
 import { CartContext } from '../../contexts/cart.context'
-import { AuthContext, DataContext } from '../../contexts/context'
+import { DataContext } from '../../contexts/context'
 import { useProductFilters } from '../../hooks/useProductFilters'
 import type { Product } from '../../types'
 import './home.scss'
@@ -12,8 +11,6 @@ import type { FiltersState, HomeProps } from './type.home'
 const Home: FC<HomeProps> = ({ searchQuery }) => {
     const data = useContext(DataContext)
     const { addItem } = useContext(CartContext)
-    const { user } = useContext(AuthContext)
-    const navigate = useNavigate()
 
     const products = (data?.products ?? []) as Product[]
     const categories = data?.category ?? []
@@ -41,12 +38,13 @@ const Home: FC<HomeProps> = ({ searchQuery }) => {
     )
 
     const addToCart = (p: Product) => {
+        const imageUrl = p.images?.[0] || p.imageUrl || ''
         addItem({
             productId: p.id,
             name: p.name,
             price: p.price,
             qty: 1,
-            ...(p.imageUrl ? { imageUrl: p.imageUrl } : {}),
+            ...(imageUrl ? { imageUrl } : {}),
         })
 
         alert(`${p.name} додано в кошик`)
