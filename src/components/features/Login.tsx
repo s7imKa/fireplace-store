@@ -81,7 +81,11 @@ export default function Login() {
             doPostLoginReturn(result.user.email || undefined)
         } catch (e: unknown) {
             const err = e as { code?: string; message?: string } | null
-            const msg = err?.message ?? 'Помилка входу через Google'
+            const host = window.location.hostname
+            const msg =
+                err?.code === 'auth/unauthorized-domain'
+                    ? `Домен ${host} не дозволений у Firebase Auth (Authorized domains).`
+                    : err?.message ?? 'Помилка входу через Google'
             setError(msg)
         }
     }

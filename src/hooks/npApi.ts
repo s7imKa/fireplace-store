@@ -1,7 +1,8 @@
-import type {} from 'react'
-
 const NP_API_URL = 'https://api.novaposhta.ua/v2.0/json/'
-const API_KEY = import.meta.env.VITE_NP_API_KEY
+const API_KEY = (import.meta.env.VITE_NP_API_KEY as string | undefined)?.trim()
+
+export const NP_API_KEY_MISSING_ERROR = 'NP_API_KEY_MISSING'
+export const isNpApiConfigured = Boolean(API_KEY)
 
 interface NPEnvelope<T> {
     success: boolean
@@ -15,7 +16,7 @@ async function npCall<TProps, TResp>(
     calledMethod: string,
     methodProperties: TProps,
 ): Promise<TResp[]> {
-    if (!API_KEY) throw new Error('Nova Poshta API key missing')
+    if (!isNpApiConfigured) throw new Error(NP_API_KEY_MISSING_ERROR)
     const res = await fetch(NP_API_URL, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },

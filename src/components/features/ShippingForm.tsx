@@ -1,6 +1,13 @@
 import { useEffect, useRef, useState } from 'react'
 import { useNavigate } from 'react-router'
-import { getWarehouses, searchCities, type City, type Warehouse } from '../../hooks/npApi'
+import {
+    getWarehouses,
+    isNpApiConfigured,
+    NP_API_KEY_MISSING_ERROR,
+    searchCities,
+    type City,
+    type Warehouse,
+} from '../../hooks/npApi'
 import { createOrder, saveShippingInfo } from '../../hooks/useOrders'
 import type { CartItem, ShippingInfo } from '../../types/order.type'
 import './ShippingForm.scss'
@@ -30,6 +37,7 @@ export default function ShippingForm({
     onSuccess,
     onCancel,
 }: Props) {
+    const useNpDirectory = isNpApiConfigured
     const [form, setForm] = useState<FormState>({
         firstName: '',
         lastName: '',
@@ -86,6 +94,12 @@ export default function ShippingForm({
 
     // Пошук міст з debounce
     useEffect(() => {
+        if (!useNpDirectory) {
+            setCities([])
+            setCityLoading(false)
+            return
+        }
+
         if (!form.city.trim()) {
             setCities([])
             return
@@ -100,16 +114,28 @@ export default function ShippingForm({
                 setCities(results)
                 setShowCityDropdown(true)
             } catch (e) {
-                console.error('Search cities error:', e)
+                if (e instanceof Error && e.message === NP_API_KEY_MISSING_ERROR) {
+                    setGlobalError(
+                        'Пошук міст тимчасово недоступний. Заповніть місто і відділення вручну.',
+                    )
+                } else {
+                    console.error('Search cities error:', e)
+                }
                 setCities([])
             } finally {
                 setCityLoading(false)
             }
         }, 300)
-    }, [form.city])
+    }, [form.city, useNpDirectory])
 
     // Завантаження складів при виборі міста
     useEffect(() => {
+        if (!useNpDirectory) {
+            setWarehouses([])
+            setWarehouseLoading(false)
+            return
+        }
+
         if (!cityRef) {
             setWarehouses([])
             return
@@ -129,11 +155,18 @@ export default function ShippingForm({
         }
 
         loadWarehouses()
-    }, [cityRef])
+    }, [cityRef, useNpDirectory])
 
     const handleFieldChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
         const { name, value } = e.target
         setForm(prev => ({ ...prev, [name]: value }))
+
+        if (name === 'city' && useNpDirectory) {
+            setCityRef(null)
+            setWarehouses([])
+            setShowWarehouseDropdown(false)
+        }
+
         // Очистити помилку поля при редагуванні
         if (errors[name]) {
             setErrors(prev => ({ ...prev, [name]: null }))
@@ -179,7 +212,7 @@ export default function ShippingForm({
         if (!form.city.trim()) {
             newErrors.city = 'Оберіть місто зі списку'
         }
-        if (!cityRef) {
+        if (useNpDirectory && !cityRef) {
             newErrors.city = 'Оберіть місто зі списку'
         }
         if (!form.novaPoshtaBranch.trim()) {
@@ -327,16 +360,20 @@ export default function ShippingForm({
                             name='city'
                             ref={cityInputRef}
                             type='text'
-                            placeholder='Почніть вводити назву міста...'
+                            placeholder={
+                                useNpDirectory
+                                    ? 'Почніть вводити назву міста...'
+                                    : 'Введіть місто вручну'
+                            }
                             value={form.city}
                             onChange={handleFieldChange}
                             onFocus={() => {
-                                if (cities.length > 0) setShowCityDropdown(true)
+                                if (useNpDirectory && cities.length > 0) setShowCityDropdown(true)
                             }}
                             aria-invalid={!!errors.city}
                             autoComplete='off'
                         />
-                        {showCityDropdown && cities.length > 0 && (
+                        {useNpDirectory && showCityDropdown && cities.length > 0 && (
                             <div className='dropdown-list'>
                                 {cities.map(city => (
                                     <div
@@ -349,13 +386,13 @@ export default function ShippingForm({
                                 ))}
                             </div>
                         )}
-                        {cityLoading && <div className='loading'>Пошук міст...</div>}
+                        {useNpDirectory && cityLoading && <div className='loading'>Пошук міст...</div>}
                     </div>
                     {errors.city && <div className='error-message'>{errors.city}</div>}
                 </div>
 
                 {/* Відділення доставки */}
-                {cityRef && (
+                {(useNpDirectory ? !!cityRef : true) && (
                     <div className='form-group'>
                         <label htmlFor='warehouse'>
                             Відділення доставки
@@ -367,16 +404,21 @@ export default function ShippingForm({
                                 name='novaPoshtaBranch'
                                 ref={warehouseInputRef}
                                 type='text'
-                                placeholder='Оберіть відділення Нової Пошти...'
+                                placeholder={
+                                    useNpDirectory
+                                        ? 'Оберіть відділення Нової Пошти...'
+                                        : 'Введіть відділення вручну'
+                                }
                                 value={form.novaPoshtaBranch}
                                 onChange={handleFieldChange}
                                 onFocus={() => {
-                                    if (warehouses.length > 0) setShowWarehouseDropdown(true)
+                                    if (useNpDirectory && warehouses.length > 0)
+                                        setShowWarehouseDropdown(true)
                                 }}
                                 aria-invalid={!!errors.novaPoshtaBranch}
                                 autoComplete='off'
                             />
-                            {showWarehouseDropdown && warehouses.length > 0 && (
+                            {useNpDirectory && showWarehouseDropdown && warehouses.length > 0 && (
                                 <div className='dropdown-list'>
                                     {warehouses.map(warehouse => (
                                         <div
@@ -389,7 +431,7 @@ export default function ShippingForm({
                                     ))}
                                 </div>
                             )}
-                            {warehouseLoading && (
+                            {useNpDirectory && warehouseLoading && (
                                 <div className='loading'>Завантаження відділень...</div>
                             )}
                         </div>
