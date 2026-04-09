@@ -1,6 +1,6 @@
 import { addDoc, collection, deleteDoc, doc, getDocs, updateDoc } from 'firebase/firestore'
 import { useContext, useEffect, useMemo, useState } from 'react'
-import { useNavigate } from 'react-router'
+import { Navigate } from 'react-router-dom'
 import { AuthContext } from '../../contexts/context'
 import { db } from '../../firebase'
 import { uploadImageToImgBB } from '../../hooks/useImgBB'
@@ -67,15 +67,6 @@ export default function AdminPanel() {
     const [successMsg, setSuccessMsg] = useState<string | null>(null)
 
     const { loading, isAdmin } = useContext(AuthContext)
-    const navigate = useNavigate()
-
-    // Перевірка прав адміна (чекаємо доки auth завантажиться)
-    useEffect(() => {
-        if (loading) return
-        if (!isAdmin) {
-            navigate('/')
-        }
-    }, [loading, isAdmin, navigate])
 
     // Завантаження даних
     useEffect(() => {
@@ -320,6 +311,14 @@ export default function AdminPanel() {
 
     const resetCategory = () => {
         setCategoryForm(emptyCategory)
+    }
+
+    if (loading) {
+        return <div className='admin-panel container'>Завантаження...</div>
+    }
+
+    if (!isAdmin) {
+        return <Navigate to='/' replace />
     }
 
     return (
