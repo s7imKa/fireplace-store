@@ -4,6 +4,12 @@ services:
     buildCommand: npm ci && npm run build
     publishPath: dist
     envVars:
+      - key: VITE_TG_TOKEN
+        sync: false
+      - key: VITE_TG_CHAT
+        sync: false
+      - key: VITE_NP_API_KEY
+        sync: false
       - key: VITE_IMGBB_API_KEY
         sync: false
     routes:
