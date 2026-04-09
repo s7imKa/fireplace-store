@@ -1,0 +1,12 @@
+services:
+  - type: static_site
+    name: fireplace-store
+    buildCommand: npm ci && npm run build
+    publishPath: dist
+    envVars:
+      - key: VITE_IMGBB_API_KEY
+        sync: false
+    routes:
+      - type: rewrite
+        source: /*
+        destination: /index.html

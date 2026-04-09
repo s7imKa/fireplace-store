@@ -10,6 +10,7 @@ import {
 import { SlBasket } from 'react-icons/sl'
 
 import { Link, useNavigate } from 'react-router-dom'
+import logo from '../../../assets/logo/logo.png'
 import { AuthContext } from '../../../contexts/context.tsx'
 import './Header.scss'
 
@@ -31,7 +32,7 @@ const Header: FC<HeaderProps> = ({ setSearchQuery }) => {
                 <div className='header__logo'>
                     <a className='header__logo-link' href='/'>
                         <img
-                            src='/src/assets/logo/logo.png'
+                            src={logo}
                             alt='Логотип компанії'
                             className='header__logo-img'
                         />
